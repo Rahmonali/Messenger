@@ -54,8 +54,6 @@ class ForgotPasswordController: UIViewController {
             self.resetPasswordButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.85),
         ])
     }
-    
-    
 }
 
 extension ForgotPasswordController {

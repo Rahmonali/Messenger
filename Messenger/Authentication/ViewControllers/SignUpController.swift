@@ -7,7 +7,7 @@
 
 import UIKit
 
-class RegisterController: UIViewController {
+class SignUpController: UIViewController {
     
     // MARK: - UI Components
     private let headerView = AuthHeaderView(title: "Sign Up", subTitle: "Create a new account")
@@ -32,7 +32,7 @@ class RegisterController: UIViewController {
     }
 }
 
-extension RegisterController {
+extension SignUpController {
     private func configureUI() {
         
         self.view.backgroundColor = .systemBackground
@@ -85,7 +85,7 @@ extension RegisterController {
     }
 }
 
-extension RegisterController {
+extension SignUpController {
     @objc func didTapSignUp() {
         let registerUserRequest = RegiserUserRequest(
             username: self.usernameField.text ?? "",
@@ -111,22 +111,21 @@ extension RegisterController {
             return
         }
         
-//        AuthService.shared.registerUser(with: registerUserRequest) { [weak self] wasRegistered, error in
-//            guard let self = self else { return }
-//            
-//            if let error = error {
-//                AlertManager.showRegistrationErrorAlert(on: self, with: error)
-//                return
-//            }
-//            
-//            if wasRegistered {
-//                if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
-//                    sceneDelegate.checkAuthentication()
-//                }
-//            } else {
-//                AlertManager.showRegistrationErrorAlert(on: self)
-//            }
-//        }
+        AuthService.shared.registerUser(with: registerUserRequest) { [weak self] wasRegistered, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                AlertManager.showRegistrationErrorAlert(on: self, with: error)
+                return
+            }
+            
+            if wasRegistered {
+                AlertManager.showRegistrationSuccessAlert(on: self)
+                self.navigationController?.popToRootViewController(animated: true)
+            } else {
+                AlertManager.showRegistrationErrorAlert(on: self)
+            }
+        }
     }
     
     @objc private func didTapSignIn() {
@@ -134,7 +133,7 @@ extension RegisterController {
     }
 }
 
-extension RegisterController:UITextFieldDelegate {
+extension SignUpController:UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         usernameField.endEditing(true)
         emailField.endEditing(true)

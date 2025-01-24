@@ -13,6 +13,7 @@ class AuthService {
     
     public static let shared = AuthService()
     private init() {}
+    private let db = Firestore.firestore()
     
     public func registerUser(with userRequest: RegiserUserRequest, completion: @escaping (Bool, Error?)->Void) {
         let username = userRequest.username
@@ -30,8 +31,7 @@ class AuthService {
                 return
             }
             
-            let db = Firestore.firestore()
-            db.collection("users")
+            self.db.collection("users")
                 .document(resultUser.uid)
                 .setData([
                     "username": username,
@@ -100,35 +100,3 @@ class AuthService {
             }
     }
 }
-
-
-
-
-//private let db = Firestore.firestore()
-//
-//func login(email: String, password: String) async throws -> String {
-//    let result = try await Auth.auth().signIn(withEmail: email, password: password)
-//    return result.user.uid
-//}
-//
-//func register(request: RegisterUserRequest) async throws -> String {
-//    let result = try await Auth.auth().createUser(withEmail: request.email, password: request.password)
-//    let userId = result.user.uid
-//
-//    let userData: [String: Any] = [
-//        "userId" : userId,
-//        "username": request.username,
-//        "email": request.email,
-//    ]
-//    try await db.collection("users").document(userId).setData(userData)
-//
-//    return userId
-//}
-//
-//func logout() throws {
-//    try Auth.auth().signOut()
-//}
-//
-//func getCurrentUserID() -> String? {
-//    return Auth.auth().currentUser?.uid
-//}

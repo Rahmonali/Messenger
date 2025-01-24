@@ -9,50 +9,39 @@ import UIKit
 import FirebaseCore
 import FirebaseAuth
 
-let appColor: UIColor = .systemTeal
-
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     let loginViewController = LoginViewController()
-    let mainViewController = DummyViewController() // TODO: have to chaeck again
+    let mainViewController = HomeController()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        FirebaseApp.configure()
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         window?.backgroundColor = .systemBackground
         
         loginViewController.delegate = self
+        mainViewController.delegate = self
         
-        registerForNotifications()
+        checkAuthentication()
         
-        displayLogin()
-        
-        FirebaseApp.configure()
         return true
     }
     
-    private func registerForNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(didLogout), name: .logout, object: nil)
-    }
-    
-    private func displayLogin() {
-        setRootViewController(loginViewController)
-    }
-    
-    private func displayMainScreen() {
-        setRootViewController(mainViewController)
-    }
-    
-    public func checkAuthentication() {
+    func checkAuthentication() {
         if Auth.auth().currentUser == nil {
-            setRootViewController(mainViewController)
+            let loginNavController = UINavigationController(rootViewController: loginViewController)
+            loginNavController.modalPresentationStyle = .fullScreen
+            setRootViewController(loginNavController)
         } else {
-            setRootViewController(loginViewController)
+            let mainNavController = UINavigationController(rootViewController: mainViewController)
+            mainNavController.modalPresentationStyle = .fullScreen
+            setRootViewController(mainNavController)
         }
-    }
+    }    
 }
 
 extension AppDelegate {
@@ -76,31 +65,13 @@ extension AppDelegate {
 
 extension AppDelegate: LoginViewControllerDelegate {
     func didLogin() {
-        displayMainScreen()
+        checkAuthentication()
     }
 }
 
 extension AppDelegate: LogoutDelegate {
-    @objc func didLogout() {
-        setRootViewController(loginViewController)
+    func didLogout() {
+        print("User should logged out")
+        checkAuthentication()
     }
 }
-
-/*
-@main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-    
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        FirebaseApp.configure()
-        return true
-    }
-    
-    // MARK: UISceneSession Lifecycle
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
-    }
-    
-}
-*/

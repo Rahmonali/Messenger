@@ -130,17 +130,12 @@ extension LoginViewController {
                 AlertManager.showSignInErrorAlert(on: self, with: error)
                 return
             }
-            
             self.delegate?.didLogin()
-            
-//            if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
-//                sceneDelegate.checkAuthentication()
-//            }
         }
     }
     
     @objc private func didTapNewUser() {
-        let vc = RegisterController()
+        let vc = SignUpController()
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
