@@ -87,7 +87,7 @@ extension SignUpController {
 
 extension SignUpController {
     @objc func didTapSignUp() {
-        let registerUserRequest = RegiserUserRequest(
+        let registerUserRequest = RegisterUserRequest(
             username: self.usernameField.text ?? "",
             email: self.emailField.text ?? "",
             password: self.passwordField.text ?? "", profileImageUrl: nil
@@ -111,19 +111,13 @@ extension SignUpController {
             return
         }
         
-        AuthService.shared.registerUser(with: registerUserRequest) { [weak self] wasRegistered, error in
-            guard let self = self else { return }
-            
-            if let error = error {
-                AlertManager.showRegistrationErrorAlert(on: self, with: error)
-                return
-            }
-            
-            if wasRegistered {
+        Task {
+            do {
+                try await AuthService.shared.registerUser(with: registerUserRequest)
                 AlertManager.showRegistrationSuccessAlert(on: self)
                 self.navigationController?.popToRootViewController(animated: true)
-            } else {
-                AlertManager.showRegistrationErrorAlert(on: self)
+            } catch {
+                AlertManager.showRegistrationErrorAlert(on: self, with: error)
             }
         }
     }

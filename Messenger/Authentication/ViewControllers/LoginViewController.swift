@@ -125,12 +125,13 @@ extension LoginViewController {
         
         signInButton.configuration?.showsActivityIndicator = true
         
-        AuthService.shared.signIn(with: loginRequest) { error in
-            if let error = error {
+        Task {
+            do {
+                try await AuthService.shared.signIn(with: loginRequest)
+                self.delegate?.didLogin()
+            } catch {
                 AlertManager.showSignInErrorAlert(on: self, with: error)
-                return
             }
-            self.delegate?.didLogin()
         }
     }
     

@@ -15,7 +15,7 @@ class HomeController: UIViewController {
         label.textColor = .label
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 24, weight: .semibold)
-        label.text = "Loading..."
+        label.text = ""
         label.numberOfLines = 2
         return label
     }()
@@ -25,22 +25,20 @@ class HomeController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
-        
-        AuthService.shared.fetchUser { [weak self] user, error in
-            guard let self = self else { return }
-            if let error = error {
-                AlertManager.showFetchingUserError(on: self, with: error)
-                return
-            }
-            
-            if let user = user {
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        Task {
+            do {
+                let user = try await AuthService.shared.fetchUser()
                 self.label.text = "\(user.username)\n\(user.email)"
+            } catch {
+                AlertManager.showFetchingUserError(on: self, with: error)
             }
         }
     }
-    
-    
-    // MARK: - UI Setup
+        
     private func setupUI() {
         self.view.backgroundColor = .systemBackground
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(didTapLogout))
@@ -53,16 +51,16 @@ class HomeController: UIViewController {
             label.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
         ])
     }
-    
-    // MARK: - Selectors
+        
     @objc private func didTapLogout(sender: UIButton) {
-        AuthService.shared.signOut { [weak self] error in
-            guard let self = self else { return }
-            if let error = error {
+        Task {
+            do {
+                try AuthService.shared.signOut()
+                self.delegate?.didLogout()
+                self.label.text = ""
+            } catch {
                 AlertManager.showLogoutError(on: self, with: error)
-                return
             }
-            delegate?.didLogout()
         }
     }
 }

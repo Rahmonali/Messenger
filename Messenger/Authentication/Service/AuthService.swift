@@ -9,94 +9,91 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 
+
 class AuthService {
     
     public static let shared = AuthService()
     private init() {}
+    
     private let db = Firestore.firestore()
     
-    public func registerUser(with userRequest: RegiserUserRequest, completion: @escaping (Bool, Error?)->Void) {
+    public func registerUser(with userRequest: RegisterUserRequest) async throws {
         let username = userRequest.username
         let email = userRequest.email
         let password = userRequest.password
         
-        Auth.auth().createUser(withEmail: email, password: password) { result, error in
-            if let error = error {
-                completion(false, error)
-                return
-            }
+        do {
+            let result = try await Auth.auth().createUser(withEmail: email, password: password)
+            let userUID = result.user.uid
             
-            guard let resultUser = result?.user else {
-                completion(false, nil)
-                return
-            }
+            let userData: [String: Any] = [
+                "username": username,
+                "email": email
+            ]
             
-            self.db.collection("users")
-                .document(resultUser.uid)
-                .setData([
-                    "username": username,
-                    "email": email
-                ]) { error in
-                    if let error = error {
-                        completion(false, error)
-                        return
-                    }
-                    
-                    completion(true, nil)
-                }
+            try await db.collection("users").document(userUID).setData(userData)
+        } catch {
+            throw error
         }
     }
     
-    public func signIn(with userRequest: LoginUserRequest, completion: @escaping (Error?)->Void) {
-        Auth.auth().signIn(
-            withEmail: userRequest.email,
-            password: userRequest.password
-        ) { result, error in
-            if let error = error {
-                completion(error)
-                return
-            } else {
-                completion(nil)
-            }
+    public func signIn(with userRequest: LoginUserRequest) async throws {
+        do {
+            try await Auth.auth().signIn(withEmail: userRequest.email, password: userRequest.password)
+        } catch {
+            throw error
         }
     }
     
-    public func signOut(completion: @escaping (Error?)->Void) {
+    public func signOut() throws {
         do {
             try Auth.auth().signOut()
-            completion(nil)
-        } catch let error {
-            completion(error)
+        } catch {
+            throw error
         }
     }
     
-    public func forgotPassword(with email: String, completion: @escaping (Error?) -> Void) {
-        Auth.auth().sendPasswordReset(withEmail: email) { error in
-            completion(error)
+    public func forgotPassword(with email: String) async throws {
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+        } catch {
+            throw error
         }
     }
     
-    public func fetchUser(completion: @escaping (User?, Error?) -> Void) {
-        guard let userUID = Auth.auth().currentUser?.uid else { return }
+    public func fetchUser() async throws -> User {
+        guard let userUID = Auth.auth().currentUser?.uid else {
+            throw AuthServiceError.noCurrentUser
+        }
         
-        let db = Firestore.firestore()
-        
-        db.collection("users")
-            .document(userUID)
-            .getDocument { snapshot, error in
-                if let error = error {
-                    completion(nil, error)
-                    return
-                }
-                
-                if let snapshot = snapshot,
-                   let snapshotData = snapshot.data(),
-                   let username = snapshotData["username"] as? String,
-                   let email = snapshotData["email"] as? String {
-                    let user = User(username: username, email: email, userUID: userUID)
-                    completion(user, nil)
-                }
-                
+        do {
+            let snapshot = try await db.collection("users").document(userUID).getDocument()
+            guard let data = snapshot.data(),
+                  let username = data["username"] as? String,
+                  let email = data["email"] as? String else {
+                throw AuthServiceError.userNotFound
             }
+            return User(username: username, email: email, userUID: userUID)
+        } catch {
+            throw error
+        }
+    }
+}
+
+// MARK: - Custom Error Enum
+enum AuthServiceError: LocalizedError {
+    case userCreationFailed
+    case userNotFound
+    case noCurrentUser
+    
+    var errorDescription: String? {
+        switch self {
+        case .userCreationFailed:
+            return "Failed to create user. Please try again."
+        case .userNotFound:
+            return "User not found. Please try again."
+        case .noCurrentUser:
+            return "No currently signed-in user."
+        }
     }
 }

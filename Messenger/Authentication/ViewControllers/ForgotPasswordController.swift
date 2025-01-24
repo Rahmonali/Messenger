@@ -58,21 +58,20 @@ class ForgotPasswordController: UIViewController {
 
 extension ForgotPasswordController {
     @objc private func didTapForgotPassword() {
-           let email = self.emailField.text ?? ""
-           
+        let email = self.emailField.text ?? ""
+        
         if !Regex.isValidEmail(for: email) {
-               AlertManager.showInvalidEmailAlert(on: self)
-               return
-           }
-           
-           AuthService.shared.forgotPassword(with: email) { [weak self] error in
-               guard let self = self else { return }
-               if let error = error {
-                   AlertManager.showErrorSendingPasswordReset(on: self, with: error)
-                   return
-               }
-               
-               AlertManager.showPasswordResetSent(on: self)
-           }
-       }
+            AlertManager.showInvalidEmailAlert(on: self)
+            return
+        }
+        
+        Task {
+            do {
+                try await AuthService.shared.forgotPassword(with: email)
+                AlertManager.showPasswordResetSent(on: self)
+            } catch {
+                AlertManager.showErrorSendingPasswordReset(on: self, with: error)
+            }
+        }
+    }
 }
