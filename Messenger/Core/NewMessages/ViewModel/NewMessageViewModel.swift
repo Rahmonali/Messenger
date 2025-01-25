@@ -21,12 +21,13 @@ class NewMessageViewModel {
     func fetchUsers() {
         Task {
             do {
-                let currentUser = try await AuthService.shared.fetchCurrentUser()
-                self.allUsers = try await UserService.shared.fetchUsers()
-                    .filter { $0.userId != currentUser.userId }
-                self.filteredUsers = allUsers
-                await MainActor.run {
-                    self.onUsersUpdated?()
+                if let currentUser = UserService.shared.currentUser {
+                    self.allUsers = try await UserService.shared.fetchUsers()
+                        .filter { $0.userId != currentUser.userId }
+                    self.filteredUsers = allUsers
+                    await MainActor.run {
+                        self.onUsersUpdated?()
+                    }
                 }
             } catch {
                 print("DEBUG: Failed to fetch users - \(error.localizedDescription)")

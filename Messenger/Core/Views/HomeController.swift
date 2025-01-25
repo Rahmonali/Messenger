@@ -11,6 +11,8 @@ import FirebaseFirestore
 
 class HomeController: UIViewController {
     
+    private let profileImageView: CircularProfileImageView = CircularProfileImageView(size: .small)
+    
     private let label: UILabel = {
         let label = UILabel()
         label.textColor = .label
@@ -30,24 +32,20 @@ class HomeController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        Task {
-            do {
-                let user = try await AuthService.shared.fetchCurrentUser()
-                self.label.text = "\(user.fullname)\n\(user.email)"
-            } catch {
-                AlertManager.showFetchingUserError(on: self, with: error)
-            }
+     
+        if let user = AuthService.shared.userSession {
+            self.label.text = "\(String(describing: user.email))"
         }
     }
     
     private func setupUI() {
+        
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "person.circle"),
+            image: UIImage(systemName: "person"),
             style: .plain,
             target: self,
             action: #selector(didTapLogout)
         )
-        
         
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "square.and.pencil.circle"),
