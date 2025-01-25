@@ -6,10 +6,11 @@
 //
 
 import UIKit
+import FirebaseAuth
+import FirebaseFirestore
 
 class HomeController: UIViewController {
     
-    // MARK: - UI Components
     private let label: UILabel = {
         let label = UILabel()
         label.textColor = .label
@@ -19,7 +20,7 @@ class HomeController: UIViewController {
         label.numberOfLines = 2
         return label
     }()
-
+    
     weak var delegate: LogoutDelegate?
     
     override func viewDidLoad() {
@@ -31,18 +32,30 @@ class HomeController: UIViewController {
         super.viewWillAppear(animated)
         Task {
             do {
-                let user = try await AuthService.shared.fetchUser()
-                self.label.text = "\(user.username)\n\(user.email)"
+                let user = try await AuthService.shared.fetchCurrentUser()
+                self.label.text = "\(user.fullname)\n\(user.email)"
             } catch {
                 AlertManager.showFetchingUserError(on: self, with: error)
             }
         }
     }
-        
+    
     private func setupUI() {
-        self.view.backgroundColor = .systemBackground
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(didTapLogout))
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "person.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(didTapLogout)
+        )
         
+        
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "square.and.pencil.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(didTapNewMessage)
+        )
+
         self.view.addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         
@@ -51,7 +64,7 @@ class HomeController: UIViewController {
             label.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
         ])
     }
-        
+    
     @objc private func didTapLogout(sender: UIButton) {
         Task {
             do {
@@ -62,5 +75,13 @@ class HomeController: UIViewController {
                 AlertManager.showLogoutError(on: self, with: error)
             }
         }
+    }
+    
+    
+    @objc private func didTapNewMessage() {
+        let newMessageViewController = NewMessageViewController()
+        let navController = UINavigationController(rootViewController: newMessageViewController)
+        navController.modalPresentationStyle = .fullScreen
+        present(navController, animated: true, completion: nil)
     }
 }

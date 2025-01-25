@@ -10,33 +10,27 @@ import FirebaseAuth
 import FirebaseFirestore
 
 
-class AuthService {
-    
+final class AuthService {
     public static let shared = AuthService()
     private init() {}
-    
+
     private let db = Firestore.firestore()
-    
-    public func registerUser(with userRequest: RegisterUserRequest) async throws {
-        let username = userRequest.username
+        
+    func createUser(with userRequest: CreateUserRequest) async throws {
+        let fullname = userRequest.fullname
         let email = userRequest.email
         let password = userRequest.password
         
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
-            let userUID = result.user.uid
-            
-            let userData: [String: Any] = [
-                "username": username,
-                "email": email
-            ]
-            
-            try await db.collection("users").document(userUID).setData(userData)
+            try await uploadUserData(email: email, fullname: fullname, id: result.user.uid)
         } catch {
+            print("DEBUG: Failed to login with error \(error.localizedDescription)")
             throw error
         }
     }
     
+
     public func signIn(with userRequest: LoginUserRequest) async throws {
         do {
             try await Auth.auth().signIn(withEmail: userRequest.email, password: userRequest.password)
@@ -44,7 +38,7 @@ class AuthService {
             throw error
         }
     }
-    
+
     public func signOut() throws {
         do {
             try Auth.auth().signOut()
@@ -52,7 +46,7 @@ class AuthService {
             throw error
         }
     }
-    
+
     public func forgotPassword(with email: String) async throws {
         do {
             try await Auth.auth().sendPasswordReset(withEmail: email)
@@ -60,23 +54,29 @@ class AuthService {
             throw error
         }
     }
-    
-    public func fetchUser() async throws -> User {
+
+    public func fetchCurrentUser() async throws -> User {
         guard let userUID = Auth.auth().currentUser?.uid else {
             throw AuthServiceError.noCurrentUser
         }
-        
+
         do {
             let snapshot = try await db.collection("users").document(userUID).getDocument()
             guard let data = snapshot.data(),
-                  let username = data["username"] as? String,
+                  let fullname = data["fullname"] as? String,
                   let email = data["email"] as? String else {
                 throw AuthServiceError.userNotFound
             }
-            return User(username: username, email: email, userUID: userUID)
+            return User(userId: userUID, fullname: fullname, email: email)
         } catch {
             throw error
         }
+    }
+    
+    private func uploadUserData(email: String, fullname: String, id: String) async throws {
+        let user = User(fullname: fullname, email: email, profileImageUrl: nil)
+        guard let encodedUser = try? Firestore.Encoder().encode(user) else { return }
+        try await FirestoreConstants.UsersCollection.document(id).setData(encodedUser)
     }
 }
 

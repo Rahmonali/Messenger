@@ -10,7 +10,7 @@ import UIKit
 class CustomTextField: UITextField {
     
     enum CustomTextFieldType {
-        case username
+        case fullname
         case email
         case password
     }
@@ -32,8 +32,8 @@ class CustomTextField: UITextField {
         self.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: self.frame.size.height))
         
         switch fieldType {
-        case .username:
-            self.placeholder = "Username"
+        case .fullname:
+            self.placeholder = "Full Name"
         case .email:
             self.placeholder = "Email Address"
             self.keyboardType = .emailAddress
@@ -52,5 +52,5 @@ class CustomTextField: UITextField {
 }
 
 #Preview {
-    CustomTextField(fieldType: .username)
+    CustomTextField(fieldType: .fullname)
 }

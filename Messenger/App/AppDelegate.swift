@@ -71,7 +71,6 @@ extension AppDelegate: LoginViewControllerDelegate {
 
 extension AppDelegate: LogoutDelegate {
     func didLogout() {
-        print("User should logged out")
         checkAuthentication()
     }
 }

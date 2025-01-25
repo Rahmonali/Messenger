@@ -16,11 +16,11 @@ class Regex {
         return emailPred.evaluate(with: email)
     }
     
-    static func isValidUsername(for username: String) -> Bool {
-        let username = username.trimmingCharacters(in: .whitespacesAndNewlines)
-        let usernameRegEx = "\\w{4,24}"
-        let usernamePred = NSPredicate(format: "SELF MATCHES %@", usernameRegEx)
-        return usernamePred.evaluate(with: username)
+    static func isValidUsername(for fullname: String) -> Bool {
+        let fullname = fullname.trimmingCharacters(in: .whitespacesAndNewlines)
+        let fullnameRegEx = "\\w{4,24}"
+        let fullnamePred = NSPredicate(format: "SELF MATCHES %@", fullnameRegEx)
+        return fullnamePred.evaluate(with: fullname)
     }
     
     static func isPasswordValid(for password: String) -> Bool {

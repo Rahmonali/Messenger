@@ -12,7 +12,7 @@ class SignUpController: UIViewController {
     // MARK: - UI Components
     private let headerView = AuthHeaderView(title: "Sign Up", subTitle: "Create a new account")
     
-    private let usernameField = CustomTextField(fieldType: .username)
+    private let fullnameField = CustomTextField(fieldType: .fullname)
     private let emailField = CustomTextField(fieldType: .email)
     private let passwordField = CustomTextField(fieldType: .password)
     
@@ -38,14 +38,14 @@ extension SignUpController {
         self.view.backgroundColor = .systemBackground
         
         self.view.addSubview(headerView)
-        self.view.addSubview(usernameField)
+        self.view.addSubview(fullnameField)
         self.view.addSubview(emailField)
         self.view.addSubview(passwordField)
         self.view.addSubview(signUpButton)
         self.view.addSubview(signInButton)
         
         self.headerView.translatesAutoresizingMaskIntoConstraints = false
-        self.usernameField.translatesAutoresizingMaskIntoConstraints = false
+        self.fullnameField.translatesAutoresizingMaskIntoConstraints = false
         self.emailField.translatesAutoresizingMaskIntoConstraints = false
         self.passwordField.translatesAutoresizingMaskIntoConstraints = false
         self.signUpButton.translatesAutoresizingMaskIntoConstraints = false
@@ -57,12 +57,12 @@ extension SignUpController {
             self.headerView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             self.headerView.heightAnchor.constraint(equalToConstant: 222),
             
-            self.usernameField.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 12),
-            self.usernameField.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
-            self.usernameField.heightAnchor.constraint(equalToConstant: heightTextField),
-            self.usernameField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.85),
+            self.fullnameField.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 12),
+            self.fullnameField.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
+            self.fullnameField.heightAnchor.constraint(equalToConstant: heightTextField),
+            self.fullnameField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.85),
             
-            self.emailField.topAnchor.constraint(equalTo: usernameField.bottomAnchor, constant: 22),
+            self.emailField.topAnchor.constraint(equalTo: fullnameField.bottomAnchor, constant: 22),
             self.emailField.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
             self.emailField.heightAnchor.constraint(equalToConstant: heightTextField),
             self.emailField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.85),
@@ -87,14 +87,14 @@ extension SignUpController {
 
 extension SignUpController {
     @objc func didTapSignUp() {
-        let registerUserRequest = RegisterUserRequest(
-            username: self.usernameField.text ?? "",
+        let registerUserRequest = CreateUserRequest(
+            fullname: self.fullnameField.text ?? "",
             email: self.emailField.text ?? "",
             password: self.passwordField.text ?? "", profileImageUrl: nil
         )
         
-        // Username check
-        if !Regex.isValidUsername(for: registerUserRequest.username) {
+        // fullname check
+        if !Regex.isValidUsername(for: registerUserRequest.fullname) {
             AlertManager.showInvalidUsernameAlert(on: self)
             return
         }
@@ -113,7 +113,7 @@ extension SignUpController {
         
         Task {
             do {
-                try await AuthService.shared.registerUser(with: registerUserRequest)
+                try await AuthService.shared.createUser(with: registerUserRequest)
                 AlertManager.showRegistrationSuccessAlert(on: self)
                 self.navigationController?.popToRootViewController(animated: true)
             } catch {
@@ -129,7 +129,7 @@ extension SignUpController {
 
 extension SignUpController:UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        usernameField.endEditing(true)
+        fullnameField.endEditing(true)
         emailField.endEditing(true)
         passwordField.endEditing(true)
         return true
