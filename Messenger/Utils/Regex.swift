@@ -16,13 +16,6 @@ class Regex {
         return emailPred.evaluate(with: email)
     }
     
-    static func isValidUsername(for fullname: String) -> Bool {
-        let fullname = fullname.trimmingCharacters(in: .whitespacesAndNewlines)
-        let fullnameRegEx = "\\w{4,24}"
-        let fullnamePred = NSPredicate(format: "SELF MATCHES %@", fullnameRegEx)
-        return fullnamePred.evaluate(with: fullname)
-    }
-    
     static func isPasswordValid(for password: String) -> Bool {
         let password = password.trimmingCharacters(in: .whitespacesAndNewlines)
         let passwordRegEx = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@#!$%^&*()]{8,}$"

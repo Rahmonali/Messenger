@@ -8,11 +8,8 @@
 import UIKit
 import PhotosUI
 
-
-import FirebaseStorage
-
 class ProfileViewController: UIViewController {
-
+    
     private let user: User
     private let viewModel = ProfileViewModel()
     
@@ -24,36 +21,30 @@ class ProfileViewController: UIViewController {
         return imageView
     }()
     
-    private let fullnameLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 22, weight: .semibold)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    private lazy var editProfileButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "camera.circle.fill"), for: .normal)
-        button.tintColor = .systemBlue
-        button.addTarget(self, action: #selector(didTapChangeProfilePicture), for: .touchUpInside)
+    private lazy var saveButton: UIBarButtonItem = {
+        let button = UIBarButtonItem(title: "Save", style: .done, target: self, action: #selector(didTapSave))
+        button.isEnabled = false
         return button
     }()
     
-    // MARK: - Initializer
+    private let fullnameField = CustomTextField(fieldType: .fullname)
+    
     init(user: User) {
         self.user = user
         super.init(nibName: nil, bundle: nil)
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
         bindViewModel()
+        fullnameField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
+        //profileImageView.image = UIImage(systemName: "person.circle.fill")
         viewModel.loadUserProfileImage(from: user.profileImageUrl)
     }
     
@@ -63,23 +54,30 @@ class ProfileViewController: UIViewController {
         title = "Profile"
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(didTapCancel))
-
         
-        fullnameLabel.text = user.fullname
+        navigationItem.rightBarButtonItem = saveButton
         
-        let stack = UIStackView(arrangedSubviews: [profileImageView, fullnameLabel, editProfileButton])
-        stack.axis = .vertical
-        stack.spacing = 12
-        stack.alignment = .center
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stack)
+        let email = makeLabel(withText: user.email, textStyle: .caption1, textColor: .darkGray, textAlignment: .center, numberOfLines: 0)
+        fullnameField.text = user.fullname
+        
+        let stackView = UIStackView(arrangedSubviews: [profileImageView, email, fullnameField])
+        stackView.axis = .vertical
+        stackView.spacing = 12
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stackView)
         
         NSLayoutConstraint.activate([
             profileImageView.widthAnchor.constraint(equalToConstant: ProfileImageSize.xLarge.dimension),
             profileImageView.heightAnchor.constraint(equalToConstant: ProfileImageSize.xLarge.dimension),
             
-            stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            fullnameField.heightAnchor.constraint(equalToConstant: heightTextField),
+            fullnameField.leadingAnchor.constraint(equalToSystemSpacingAfter: view.leadingAnchor, multiplier: 1),
+            view.trailingAnchor.constraint(equalToSystemSpacingAfter: fullnameField.trailingAnchor, multiplier: 1),
+            
+            stackView.topAnchor.constraint(equalToSystemSpacingBelow: view.safeAreaLayoutGuide.topAnchor, multiplier: 1),
+            stackView.leadingAnchor.constraint(equalToSystemSpacingAfter: view.leadingAnchor, multiplier: 1),
+            view.trailingAnchor.constraint(equalToSystemSpacingAfter: stackView.trailingAnchor, multiplier: 1),
         ])
     }
     
@@ -89,7 +87,6 @@ class ProfileViewController: UIViewController {
         }
     }
     
-    // MARK: - Actions
     @objc private func didTapChangeProfilePicture() {
         var configuration = PHPickerConfiguration()
         configuration.filter = .images
@@ -101,6 +98,23 @@ class ProfileViewController: UIViewController {
     
     @objc private func didTapCancel() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func didTapSave() {
+        guard let updatedFullname = fullnameField.text, !updatedFullname.isEmpty else { return }
+        Task {
+            do {
+                try await UserService.shared.updateUserFullname(updatedFullname)
+                view.endEditing(true) // Hide the keyboard
+                AlertManager.showAlert(on: self, title: "Your fullname has been updated successfully.", message: nil, buttonText: "OK")
+            } catch {
+                print("Error updating fullname: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    @objc private func textFieldDidChange() {
+        saveButton.isEnabled = fullnameField.text?.isEmpty == false
     }
 }
 
@@ -121,61 +135,12 @@ extension ProfileViewController: PHPickerViewControllerDelegate {
 }
 
 
-
-
-
-
-
-
-
-class ProfileViewModel {
-    var onProfileImageUpdate: ((UIImage?) -> Void)?
-    
-    func loadUserProfileImage(from urlString: String?) {
-        guard let urlString = urlString, let url = URL(string: urlString) else {
-            onProfileImageUpdate?(UIImage(systemName: "person.circle.fill"))
-            return
-        }
-        
-        DispatchQueue.global().async {
-            if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    self.onProfileImageUpdate?(image)
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.onProfileImageUpdate?(UIImage(systemName: "person.circle.fill"))
-                }
-            }
-        }
-    }
-    
-    func updateProfileImage(_ image: UIImage) async {
-        guard let imageUrl = await uploadProfileImage(image) else { return }
-        // Update the user's profile image URL in the database
-        do {
-            try await UserService.shared.updateUserProfileImageUrl(imageUrl)
-            loadUserProfileImage(from: imageUrl)
-        } catch {
-            print("Failed to update user profile image URL.")
-        }
-    }
-    
-    private func uploadProfileImage(_ image: UIImage) async -> String? {
-        guard let imageData = image.jpegData(compressionQuality: 0.5) else { return nil }
-        let fileName = UUID().uuidString
-        let ref = Storage.storage().reference(withPath: "/profile_images/\(fileName)")
-        
-        do {
-            _ = try await ref.putDataAsync(imageData)
-            let url = try await ref.downloadURL()
-            return url.absoluteString
-        } catch {
-            print("Failed to upload profile image: \(error.localizedDescription)")
-            return nil
-        }
-    }
+#Preview {
+    ProfileViewController(user: User(
+        userId: "234353",
+        fullname: "Rahmonali",
+        email: "rahmonali1995@gmail.com",
+        profileImageUrl: nil)
+    )
 }
-
-
 

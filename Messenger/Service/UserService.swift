@@ -16,9 +16,9 @@ final class UserService {
     static let shared = UserService()
     
     private init() {
-        Task { try await fetchCurrentUser() }
+        //Task { try await fetchCurrentUser() }
     }
-
+    
     private let db = Firestore.firestore()
     
     
@@ -35,11 +35,20 @@ final class UserService {
         return mapUsers(fromSnapshot: snapshot, currentUid: currentUid)
     }
     
-    
     func fetchCurrentUser() async throws {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let snapshot = try await FirestoreConstants.UsersCollection.document(uid).getDocument()
         self.currentUser = try snapshot.data(as: User.self)
+    }
+    
+    func updateUserFullname(_ fullname: String) async throws {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw UserServiceError.noCurrentUser
+        }
+        let userDocument = db.collection("users").document(userId)
+        try await userDocument.updateData(["fullname": fullname])
+        let snapshot = try await userDocument.getDocument()
+        currentUser = try snapshot.data(as: User.self)
     }
     
     private func mapUsers(fromSnapshot snapshot: QuerySnapshot, currentUid: String) -> [User] {
@@ -48,31 +57,17 @@ final class UserService {
             .filter({ $0.id !=  currentUid })
     }
     
-    
-    
-    private let usersCollection = "users"
-
-    
     func updateUserProfileImageUrl(_ imageUrl: String) async throws {
         guard let userId = Auth.auth().currentUser?.uid else {
             throw UserServiceError.noCurrentUser
         }
-
-        let userDocument = db.collection(usersCollection).document(userId)
-
-        do {
-            try await userDocument.updateData(["profileImageUrl": imageUrl])
-            print("DEBUG: Successfully updated profile image URL.")
-        } catch {
-            print("DEBUG: Failed to update profile image URL with error \(error.localizedDescription)")
-            throw error
-        }
+        let userDocument = db.collection("users").document(userId)
+        try await userDocument.updateData(["profileImageUrl": imageUrl])
+        let snapshot = try await userDocument.getDocument()
+        currentUser = try snapshot.data(as: User.self)
     }
     
-    
-    /// UserService-specific errors.
     enum UserServiceError: Error {
         case noCurrentUser
-        case userNotFound
     }
 }

@@ -48,15 +48,10 @@ final class AuthService {
             throw error
         }
     }
-
-    public func signOut() throws {
-        do {
-            try Auth.auth().signOut()
-            self.userSession = nil
-            UserService.shared.currentUser = nil
-        } catch {
-            throw error
-        }
+    
+    func signOut() throws {
+        try Auth.auth().signOut()
+        UserService.shared.currentUser = nil
     }
 
     public func forgotPassword(with email: String) async throws {

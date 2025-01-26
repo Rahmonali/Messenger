@@ -93,31 +93,25 @@ extension SignUpController {
             password: self.passwordField.text ?? "", profileImageUrl: nil
         )
         
-        // fullname check
-        if !Regex.isValidUsername(for: registerUserRequest.fullname) {
-            AlertManager.showInvalidUsernameAlert(on: self)
-            return
-        }
-        
         // Email check
         if !Regex.isValidEmail(for: registerUserRequest.email) {
-            AlertManager.showInvalidEmailAlert(on: self)
+            AlertManager.showAlert(on: self, title: "Invalid Email", message: "Please enter a valid email.", buttonText: "Dismiss")
             return
         }
         
         // Password check
         if !Regex.isPasswordValid(for: registerUserRequest.password) {
-            AlertManager.showInvalidPasswordAlert(on: self)
+            AlertManager.showAlert(on: self, title: "Invalid Password", message: "Please enter a valid password.", buttonText: "OK")
             return
         }
         
         Task {
             do {
                 try await AuthService.shared.createUser(with: registerUserRequest)
-                AlertManager.showRegistrationSuccessAlert(on: self)
+                AlertManager.showAlert(on: self, title: "Your account created", message: "Please log in to your account", buttonText: "OK")
                 self.navigationController?.popToRootViewController(animated: true)
             } catch {
-                AlertManager.showRegistrationErrorAlert(on: self, with: error)
+                AlertManager.showAlert(on: self, title: "Unknown Registration Error", message: error.localizedDescription, buttonText: "Dismiss")
             }
         }
     }

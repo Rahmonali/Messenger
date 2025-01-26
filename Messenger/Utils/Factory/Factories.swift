@@ -61,7 +61,7 @@ func makeStackView(withOrientation axis: NSLayoutConstraint.Axis) -> UIStackView
     stackView.axis = axis
     stackView.distribution = .fill
     stackView.alignment = .fill
-    stackView.spacing = 8.0
+    stackView.spacing = 12.0
     
     return stackView
 }

@@ -11,7 +11,7 @@ import FirebaseFirestore
 
 class HomeController: UIViewController {
     
-    private let profileImageView: CircularProfileImageView = CircularProfileImageView(size: .small)
+    let profileImageView = CircularProfileImageView(size: .xSmall)
     
     private let label: UILabel = {
         let label = UILabel()
@@ -32,28 +32,22 @@ class HomeController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-     
+        
         if let user = AuthService.shared.userSession {
             self.label.text = "\(String(describing: user.email))"
         }
+        
+        setupProfileImageInNavigationBar()
     }
     
     private func setupUI() {
-        
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "person"),
-            style: .plain,
-            target: self,
-            action: #selector(didTapLogout)
-        )
-        
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "square.and.pencil.circle"),
             style: .plain,
             target: self,
             action: #selector(didTapNewMessage)
         )
-
+        
         self.view.addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         
@@ -63,6 +57,16 @@ class HomeController: UIViewController {
         ])
     }
     
+    private func setupProfileImageInNavigationBar() {
+        profileImageView.configure(with: UserService.shared.currentUser?.profileImageUrl)
+        profileImageView.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapProfile))
+        profileImageView.addGestureRecognizer(tapGesture)
+        let profileBarButtonItem = UIBarButtonItem(customView: profileImageView)
+        self.navigationItem.leftBarButtonItem = profileBarButtonItem
+    }
+    
+    
     @objc private func didTapLogout(sender: UIButton) {
         Task {
             do {
@@ -70,7 +74,7 @@ class HomeController: UIViewController {
                 self.delegate?.didLogout()
                 self.label.text = ""
             } catch {
-                AlertManager.showLogoutError(on: self, with: error)
+                AlertManager.showAlert(on: self, title: "Log Out Error", message: error.localizedDescription, buttonText: "Dismiss")
             }
         }
     }
@@ -84,7 +88,7 @@ class HomeController: UIViewController {
     }
     
     @objc private func didTapProfile() {
-     
+        
         if let user = UserService.shared.currentUser {
             let profileViewController = ProfileViewController(user: user)
             let navController = UINavigationController(rootViewController: profileViewController)

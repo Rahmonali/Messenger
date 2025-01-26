@@ -61,16 +61,16 @@ extension ForgotPasswordController {
         let email = self.emailField.text ?? ""
         
         if !Regex.isValidEmail(for: email) {
-            AlertManager.showInvalidEmailAlert(on: self)
+            AlertManager.showAlert(on: self, title: "Invalid Email", message: "Please enter a valid email", buttonText: "Dismiss")
             return
         }
         
         Task {
             do {
                 try await AuthService.shared.forgotPassword(with: email)
-                AlertManager.showPasswordResetSent(on: self)
+                AlertManager.showAlert(on: self, title: "Password Reset Sent", message: nil, buttonText: "OK")
             } catch {
-                AlertManager.showErrorSendingPasswordReset(on: self, with: error)
+                AlertManager.showAlert(on: self, title: "Error Sending Password Reset", message: error.localizedDescription, buttonText: "Dismiss")
             }
         }
     }

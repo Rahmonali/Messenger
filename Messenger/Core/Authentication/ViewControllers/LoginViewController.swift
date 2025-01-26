@@ -113,13 +113,13 @@ extension LoginViewController {
         
         // Email check
         if !Regex.isValidEmail(for: loginRequest.email) {
-            AlertManager.showInvalidEmailAlert(on: self)
+            AlertManager.showAlert(on: self, title: "Invalid Email", message: "Please enter a valid email.", buttonText: "OK")
             return
         }
         
         // Password check
         if !Regex.isPasswordValid(for: loginRequest.password) {
-            AlertManager.showInvalidPasswordAlert(on: self)
+            AlertManager.showAlert(on: self, title: "Invalid Password", message: "Please enter a valid password.", buttonText: "OK")
             return
         }
         
@@ -130,7 +130,7 @@ extension LoginViewController {
                 try await AuthService.shared.signIn(with: loginRequest)
                 self.delegate?.didLogin()
             } catch {
-                AlertManager.showSignInErrorAlert(on: self, with: error)
+                AlertManager.showAlert(on: self, title: "Unknown Error Signing In", message: error.localizedDescription, buttonText: "Dismiss")
             }
         }
     }
