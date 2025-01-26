@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class CircularProfileImageView: UIImageView {
     init(size: ProfileImageSize) {
@@ -13,6 +14,7 @@ class CircularProfileImageView: UIImageView {
         self.contentMode = .scaleAspectFill
         self.layer.cornerRadius = size.dimension / 2
         self.clipsToBounds = true
+        self.tintColor = UIColor.systemGray4
         self.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             self.widthAnchor.constraint(equalToConstant: size.dimension),
@@ -26,10 +28,9 @@ class CircularProfileImageView: UIImageView {
 
     func configure(with imageUrl: String?) {
         if let imageUrl = imageUrl, let url = URL(string: imageUrl) {
-            //self.kf.setImage(with: url, placeholder: UIImage(systemName: "person.circle.fill"))
+            self.kf.setImage(with: url, placeholder: UIImage(systemName: "person.circle.fill"))
         } else {
             self.image = UIImage(systemName: "person.circle.fill")
-            self.tintColor = UIColor.systemGray4
         }
     }
 }

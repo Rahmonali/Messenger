@@ -44,7 +44,7 @@ class HomeController: UIViewController {
             image: UIImage(systemName: "person"),
             style: .plain,
             target: self,
-            action: #selector(didTapProfile)
+            action: #selector(didTapLogout)
         )
         
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(

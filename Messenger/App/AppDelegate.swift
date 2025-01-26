@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.backgroundColor = .systemBackground
         
         loginViewController.delegate = self
-        //mainViewController.delegate = self
+        mainViewController.delegate = self
         
         checkAuthentication()
         
