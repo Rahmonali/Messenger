@@ -12,6 +12,7 @@ import FirebaseFirestore
 class HomeController: UIViewController {
     
     let profileImageView = CircularProfileImageView(size: .xSmall)
+    private let profileViewModel = ProfileViewModel()
     
     private let label: UILabel = {
         let label = UILabel()
@@ -56,17 +57,10 @@ class HomeController: UIViewController {
             label.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
         ])
     }
-    
-    private func setupProfileImageInNavigationBar() {
-        profileImageView.configure(with: UserService.shared.currentUser?.profileImageUrl)
-        profileImageView.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapProfile))
-        profileImageView.addGestureRecognizer(tapGesture)
-        let profileBarButtonItem = UIBarButtonItem(customView: profileImageView)
-        self.navigationItem.leftBarButtonItem = profileBarButtonItem
-    }
-    
-    
+}
+
+// MARK: Actions
+extension HomeController {
     @objc private func didTapLogout(sender: UIButton) {
         Task {
             do {
@@ -79,7 +73,6 @@ class HomeController: UIViewController {
         }
     }
     
-    
     @objc private func didTapNewMessage() {
         let newMessageViewController = NewMessageViewController()
         let navController = UINavigationController(rootViewController: newMessageViewController)
@@ -88,12 +81,20 @@ class HomeController: UIViewController {
     }
     
     @objc private func didTapProfile() {
-        
         if let user = UserService.shared.currentUser {
-            let profileViewController = ProfileViewController(user: user)
+            let profileViewController = ProfileViewController(user: user, profileViewModel: profileViewModel)
             let navController = UINavigationController(rootViewController: profileViewController)
             navController.modalPresentationStyle = .fullScreen
             present(navController, animated: true, completion: nil)
         }
+    }
+    
+    private func setupProfileImageInNavigationBar() {
+        profileImageView.configure(with: UserService.shared.currentUser?.profileImageUrl)
+        profileImageView.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapProfile))
+        profileImageView.addGestureRecognizer(tapGesture)
+        let profileBarButtonItem = UIBarButtonItem(customView: profileImageView)
+        self.navigationItem.leftBarButtonItem = profileBarButtonItem
     }
 }

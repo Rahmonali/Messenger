@@ -11,7 +11,7 @@ import PhotosUI
 class ProfileViewController: UIViewController {
     
     private let user: User
-    private let viewModel = ProfileViewModel()
+    let profileViewModel: ProfileViewModel
     
     private lazy var profileImageView: CircularProfileImageView = {
         let imageView = CircularProfileImageView(size: .xLarge)
@@ -29,8 +29,9 @@ class ProfileViewController: UIViewController {
     
     private let fullnameField = CustomTextField(fieldType: .fullname)
     
-    init(user: User) {
+    init(user: User, profileViewModel: ProfileViewModel) {
         self.user = user
+        self.profileViewModel = profileViewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -40,15 +41,14 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        profileViewModel.delegate = self
         configureUI()
-        bindViewModel()
-        fullnameField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         
-        //profileImageView.image = UIImage(systemName: "person.circle.fill")
-        viewModel.loadUserProfileImage(from: user.profileImageUrl)
+        profileImageView.image = UIImage(systemName: "person.circle.fill")
+        fetchUserProfileImage()
+        fullnameField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
     
-    // MARK: - Helpers
     private func configureUI() {
         view.backgroundColor = .systemBackground
         title = "Profile"
@@ -80,13 +80,10 @@ class ProfileViewController: UIViewController {
             view.trailingAnchor.constraint(equalToSystemSpacingAfter: stackView.trailingAnchor, multiplier: 1),
         ])
     }
-    
-    private func bindViewModel() {
-        viewModel.onProfileImageUpdate = { [weak self] image in
-            self?.profileImageView.image = image
-        }
-    }
-    
+}
+
+// MARK: Actions
+extension ProfileViewController {
     @objc private func didTapChangeProfilePicture() {
         var configuration = PHPickerConfiguration()
         configuration.filter = .images
@@ -107,6 +104,7 @@ class ProfileViewController: UIViewController {
                 try await UserService.shared.updateUserFullname(updatedFullname)
                 view.endEditing(true) // Hide the keyboard
                 AlertManager.showAlert(on: self, title: "Your fullname has been updated successfully.", message: nil, buttonText: "OK")
+                saveButton.isEnabled = false
             } catch {
                 print("Error updating fullname: \(error.localizedDescription)")
             }
@@ -118,7 +116,21 @@ class ProfileViewController: UIViewController {
     }
 }
 
-// MARK: - PHPickerViewControllerDelegate
+// MARK: ProfileViewModelDelegate
+extension ProfileViewController: ProfileViewModelDelegate {
+    private func fetchUserProfileImage() {
+        Task { await profileViewModel.loadUserProfileImage(from: user.profileImageUrl) }
+    }
+    
+    func didUpdateProfileImage(_ image: UIImage?) {
+        DispatchQueue.main.async {
+            self.profileImageView.image = image
+            
+        }
+    }
+}
+
+// MARK: PHPickerViewControllerDelegate
 extension ProfileViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true)
@@ -127,7 +139,7 @@ extension ProfileViewController: PHPickerViewControllerDelegate {
         item.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
             if let image = object as? UIImage {
                 Task {
-                    await self?.viewModel.updateProfileImage(image)
+                    await self?.profileViewModel.updateProfileImage(image)
                 }
             }
         }
@@ -140,7 +152,8 @@ extension ProfileViewController: PHPickerViewControllerDelegate {
         userId: "234353",
         fullname: "Rahmonali",
         email: "rahmonali1995@gmail.com",
-        profileImageUrl: nil)
+        profileImageUrl: nil),
+                          profileViewModel: ProfileViewModel()
     )
 }
 

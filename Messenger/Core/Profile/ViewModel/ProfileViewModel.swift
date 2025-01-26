@@ -8,26 +8,26 @@
 import UIKit
 import FirebaseStorage
 
+protocol ProfileViewModelDelegate: AnyObject {
+    func didUpdateProfileImage(_ image: UIImage?)
+}
+
 class ProfileViewModel {
-    var onProfileImageUpdate: ((UIImage?) -> Void)?
+    weak var delegate: ProfileViewModelDelegate?
     
-    func loadUserProfileImage(from urlString: String?) {
-        
+    func loadUserProfileImage(from urlString: String?) async {
+        let placeholderImage = UIImage(systemName: "person.circle.fill")
         guard let urlString = urlString, let url = URL(string: urlString) else {
-            onProfileImageUpdate?(UIImage(systemName: "person.circle.fill"))
+            delegate?.didUpdateProfileImage(placeholderImage)
             return
         }
         
-        DispatchQueue.global().async {
-            if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    self.onProfileImageUpdate?(image)
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.onProfileImageUpdate?(UIImage(systemName: "person.circle.fill"))
-                }
-            }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let image = UIImage(data: data) ?? placeholderImage
+            delegate?.didUpdateProfileImage(image)
+        } catch {
+            delegate?.didUpdateProfileImage(placeholderImage)
         }
     }
     
@@ -35,9 +35,9 @@ class ProfileViewModel {
         guard let imageUrl = await uploadProfileImage(image) else { return }
         do {
             try await UserService.shared.updateUserProfileImageUrl(imageUrl)
-            loadUserProfileImage(from: imageUrl)
+            await loadUserProfileImage(from: imageUrl)
         } catch {
-            print("Failed to update user profile image URL.")
+            print("Failed to update user profile image URL: \(error.localizedDescription)")
         }
     }
     
