@@ -47,4 +47,32 @@ final class UserService {
             .compactMap({ try? $0.data(as: User.self) })
             .filter({ $0.id !=  currentUid })
     }
+    
+    
+    
+    private let usersCollection = "users"
+
+    
+    func updateUserProfileImageUrl(_ imageUrl: String) async throws {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw UserServiceError.noCurrentUser
+        }
+
+        let userDocument = db.collection(usersCollection).document(userId)
+
+        do {
+            try await userDocument.updateData(["profileImageUrl": imageUrl])
+            print("DEBUG: Successfully updated profile image URL.")
+        } catch {
+            print("DEBUG: Failed to update profile image URL with error \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    
+    /// UserService-specific errors.
+    enum UserServiceError: Error {
+        case noCurrentUser
+        case userNotFound
+    }
 }

@@ -44,7 +44,7 @@ class HomeController: UIViewController {
             image: UIImage(systemName: "person"),
             style: .plain,
             target: self,
-            action: #selector(didTapLogout)
+            action: #selector(didTapProfile)
         )
         
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -81,5 +81,15 @@ class HomeController: UIViewController {
         let navController = UINavigationController(rootViewController: newMessageViewController)
         navController.modalPresentationStyle = .fullScreen
         present(navController, animated: true, completion: nil)
+    }
+    
+    @objc private func didTapProfile() {
+     
+        if let user = UserService.shared.currentUser {
+            let profileViewController = ProfileViewController(user: user)
+            let navController = UINavigationController(rootViewController: profileViewController)
+            navController.modalPresentationStyle = .fullScreen
+            present(navController, animated: true, completion: nil)
+        }
     }
 }

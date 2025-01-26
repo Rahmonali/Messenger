@@ -34,7 +34,7 @@ class NewMessageViewController: UIViewController {
     }
 
     private func configureUI() {
-        view.backgroundColor = .systemGroupedBackground
+        view.backgroundColor = .systemBackground
         title = "New Message"
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(didTapCancel))
