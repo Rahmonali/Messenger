@@ -16,7 +16,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let loginViewController = LoginViewController()
     let mainViewController = HomeController()
     
-       
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
         
@@ -25,8 +24,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.backgroundColor = .systemBackground
         
         loginViewController.delegate = self
-        mainViewController.delegate = self
         
+        registerForNotifications()
         checkAuthentication()
         
         return true
@@ -42,7 +41,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             mainNavController.modalPresentationStyle = .fullScreen
             setRootViewController(mainNavController)
         }
-    }    
+    }
+    
+    private func registerForNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(didLogout), name: .logout, object: nil)
+    }
 }
 
 extension AppDelegate {
@@ -71,7 +74,7 @@ extension AppDelegate: LoginViewControllerDelegate {
 }
 
 extension AppDelegate: LogoutDelegate {
-    func didLogout() {
+    @objc func didLogout() {
         checkAuthentication()
     }
 }

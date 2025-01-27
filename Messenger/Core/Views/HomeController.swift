@@ -23,9 +23,7 @@ class HomeController: UIViewController {
         label.numberOfLines = 2
         return label
     }()
-    
-    weak var delegate: LogoutDelegate?
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -61,18 +59,6 @@ class HomeController: UIViewController {
 
 // MARK: Actions
 extension HomeController {
-    @objc private func didTapLogout(sender: UIButton) {
-        Task {
-            do {
-                try AuthService.shared.signOut()
-                self.delegate?.didLogout()
-                self.label.text = ""
-            } catch {
-                AlertManager.showAlert(on: self, title: "Log Out Error", message: error.localizedDescription, buttonText: "Dismiss")
-            }
-        }
-    }
-    
     @objc private func didTapNewMessage() {
         let newMessageViewController = NewMessageViewController()
         let navController = UINavigationController(rootViewController: newMessageViewController)

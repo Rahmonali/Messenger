@@ -27,6 +27,8 @@ class ProfileViewController: UIViewController {
         return button
     }()
     
+    private let logoutButton = CustomButton(title: "Logout", fontSize: .small)
+    
     private let fullnameField = CustomTextField(fieldType: .fullname)
     
     init(user: User, profileViewModel: ProfileViewModel) {
@@ -39,6 +41,8 @@ class ProfileViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    weak var delegate: LogoutDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         profileViewModel.delegate = self
@@ -47,6 +51,8 @@ class ProfileViewController: UIViewController {
         profileImageView.image = UIImage(systemName: "person.circle.fill")
         fetchUserProfileImage()
         fullnameField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        self.logoutButton.addTarget(self, action: #selector(didTapLogout), for: .touchUpInside)
+        
     }
     
     private func configureUI() {
@@ -64,8 +70,13 @@ class ProfileViewController: UIViewController {
         stackView.axis = .vertical
         stackView.spacing = 12
         stackView.alignment = .center
+        
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        logoutButton.translatesAutoresizingMaskIntoConstraints = false
+        logoutButton.setTitleColor(.red, for: .normal)
+        
         view.addSubview(stackView)
+        view.addSubview(logoutButton)
         
         NSLayoutConstraint.activate([
             profileImageView.widthAnchor.constraint(equalToConstant: ProfileImageSize.xLarge.dimension),
@@ -78,8 +89,25 @@ class ProfileViewController: UIViewController {
             stackView.topAnchor.constraint(equalToSystemSpacingBelow: view.safeAreaLayoutGuide.topAnchor, multiplier: 1),
             stackView.leadingAnchor.constraint(equalToSystemSpacingAfter: view.leadingAnchor, multiplier: 1),
             view.trailingAnchor.constraint(equalToSystemSpacingAfter: stackView.trailingAnchor, multiplier: 1),
+            
+            logoutButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8), // Adjust constant as needed
+            logoutButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
         ])
     }
+    
+    @objc private func didTapLogout(sender: UIButton) {
+        Task {
+            do {
+                try AuthService.shared.signOut()
+                self.delegate?.didLogout()
+                NotificationCenter.default.post(name: .logout, object: nil)
+            } catch {
+                AlertManager.showAlert(on: self, title: "Log Out Error", message: error.localizedDescription, buttonText: "Dismiss")
+            }
+        }
+    }
+    
+    
 }
 
 // MARK: Actions
@@ -145,7 +173,6 @@ extension ProfileViewController: PHPickerViewControllerDelegate {
         }
     }
 }
-
 
 #Preview {
     ProfileViewController(user: User(
