@@ -23,15 +23,12 @@ class InboxViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
         setupTableView()
-        
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupProfileImageInNavigationBar()
-        updateWelcomeLabel()
-        tableView.reloadData()
+        fetchCurrentUserAndReloadTable()
     }
     
     // MARK: - UI Setup
@@ -69,10 +66,22 @@ class InboxViewController: UIViewController {
         ])
     }
     
+    func fetchCurrentUserAndReloadTable() {
+        UserService.shared.currentUserDidChange = { [weak self] user in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.profileImageView.configure(with: user?.profileImageUrl)
+                self.tableView.reloadData()
+                
+                self.updateWelcomeLabel()
+            }
+        }
+    }
+    
     private func updateWelcomeLabel() {
         let hasConversations = !inboxViewModel.filteredMessages.isEmpty
-        welcomeLabel.isHidden = hasConversations
-        tableView.isHidden = !hasConversations        
+       // welcomeLabel.isHidden = hasConversations
+        //tableView.isHidden = !hasConversations
     }
     
     private func setupTableView() {
@@ -81,10 +90,7 @@ class InboxViewController: UIViewController {
         tableView.register(MessageCell.self, forCellReuseIdentifier: MessageCell.identifier)
     }
     
-    
-    
     private func setupProfileImageInNavigationBar() {
-        profileImageView.configure(with: UserService.shared.currentUser?.profileImageUrl)
         profileImageView.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapProfile))
         profileImageView.addGestureRecognizer(tapGesture)

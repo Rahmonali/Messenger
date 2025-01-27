@@ -11,7 +11,6 @@ import FirebaseFirestore
 class InboxViewModel {
     var recentMessages: [Message] = []
     var conversations: [Conversation] = []
-    var user: User?
     var searchText: String = ""
 
     var filteredMessages: [Message] {
@@ -31,8 +30,6 @@ class InboxViewModel {
     init() {
         setupSubscribers()
         observeRecentMessages()
-        
-        print("DEBUG: Current user is \(String(describing: user))")
     }
     
     private func setupSubscribers() {

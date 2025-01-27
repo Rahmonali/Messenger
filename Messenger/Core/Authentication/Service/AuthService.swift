@@ -51,6 +51,7 @@ final class AuthService {
     func signOut() throws {
         try Auth.auth().signOut()
         UserService.shared.currentUser = nil
+        UserService.shared.currentUserDidChange = nil   
     }
 
     public func forgotPassword(with email: String) async throws {
