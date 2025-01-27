@@ -23,6 +23,8 @@ class InboxViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
         setupTableView()
+        
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -34,6 +36,7 @@ class InboxViewController: UIViewController {
     
     // MARK: - UI Setup
     private func configureUI() {
+        view.backgroundColor = .systemBackground
         configureNavigationBar()
         view.addSubview(welcomeLabel)
         view.addSubview(tableView)
@@ -59,7 +62,7 @@ class InboxViewController: UIViewController {
             welcomeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             welcomeLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -67,18 +70,18 @@ class InboxViewController: UIViewController {
     }
     
     private func updateWelcomeLabel() {
-        if let user = AuthService.shared.userSession {
-            welcomeLabel.text = "There are no conversations yet"
-        }
+        let hasConversations = !inboxViewModel.filteredMessages.isEmpty
+        welcomeLabel.isHidden = hasConversations
+        tableView.isHidden = !hasConversations        
     }
-    
     
     private func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(MessageCell.self, forCellReuseIdentifier: MessageCell.identifier)
-        tableView.separatorStyle = .none
     }
+    
+    
     
     private func setupProfileImageInNavigationBar() {
         profileImageView.configure(with: UserService.shared.currentUser?.profileImageUrl)
@@ -86,13 +89,7 @@ class InboxViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapProfile))
         profileImageView.addGestureRecognizer(tapGesture)
         let profileBarButtonItem = UIBarButtonItem(customView: profileImageView)
-        self.navigationItem.leftBarButtonItem = profileBarButtonItem
-    }
-    
-    private func updateEmptyState() {
-        let isEmpty = inboxViewModel.filteredMessages.isEmpty
-        welcomeLabel.isHidden = !isEmpty
-        tableView.isHidden = isEmpty
+        navigationItem.leftBarButtonItem = profileBarButtonItem
     }
     
     // MARK: - Actions
@@ -115,7 +112,6 @@ class InboxViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension InboxViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        updateEmptyState()
         return inboxViewModel.filteredMessages.count
     }
     
@@ -135,13 +131,15 @@ extension InboxViewController: UITableViewDataSource {
 extension InboxViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = inboxViewModel.filteredMessages[indexPath.row]
-        let detailViewController = ChatViewController(recentMessage: message)
+        guard let user = message.user else { return }
+        let viewModel = ChatViewModel(user: user)
+        let detailViewController = ChatViewController(user: user, viewModel: viewModel)
         navigationController?.pushViewController(detailViewController, animated: true)
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == inboxViewModel.filteredMessages.count - 1 {
-            print("DEBUG: Paginate here..") // TODO: DEBUG:  I have to work on it in future paginate here..
+            print("DEBUG: Paginate shoud be here here..")
         }
     }
 }

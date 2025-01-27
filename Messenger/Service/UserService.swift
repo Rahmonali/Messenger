@@ -11,20 +11,22 @@ import FirebaseAuth
 
 final class UserService {
     
-    var currentUser: User? {
-           didSet {
-               currentUserDidChange?(currentUser) // Notify when `currentUser` changes
-           }
-       }
+    var currentUser: User?
+//    {
+//           didSet {
+//               currentUserDidChange?(currentUser) // Notify when `currentUser` changes
+//           }
+//       }
     
-    var currentUserDidChange: ((User?) -> Void)? 
+//    var currentUserDidChange: ((User?) -> Void)? 
     
     static let shared = UserService()
     
-    private init() {}
+    init() {
+        Task { try await fetchCurrentUser() }
+    }
     
     private let db = Firestore.firestore()
-    
     
     func fetchUsers(limit: Int? = nil) async throws -> [User] {
         guard let currentUid = Auth.auth().currentUser?.uid else { return [] }

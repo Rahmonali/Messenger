@@ -31,6 +31,8 @@ class InboxViewModel {
     init() {
         setupSubscribers()
         observeRecentMessages()
+        
+        print("DEBUG: Current user is \(String(describing: user))")
     }
     
     private func setupSubscribers() {

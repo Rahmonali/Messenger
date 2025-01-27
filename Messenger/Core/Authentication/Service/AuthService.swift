@@ -21,7 +21,6 @@ final class AuthService {
     }
 
     private let db = Firestore.firestore()
-
         
     func createUser(with userRequest: CreateUserRequest) async throws {
         let fullname = userRequest.fullname
@@ -68,7 +67,7 @@ final class AuthService {
         try await FirestoreConstants.UsersCollection.document(id).setData(encodedUser)
     }
     
-    private func loadUserData() async throws {
+    func loadUserData() async throws {
         try await UserService.shared.fetchCurrentUser()
     }
 }

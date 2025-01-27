@@ -12,13 +12,11 @@ import FirebaseFirestore
 enum MessageSendType {
     case text(String)
     case image(UIImage)
-    case link(String)
 }
 
 enum ContentType {
     case text(String)
     case image(String)
-    case link(String)
 }
 
 struct Message: Identifiable, Codable, Hashable {
@@ -50,10 +48,6 @@ struct Message: Identifiable, Codable, Hashable {
     var contentType: ContentType {
         if let imageUrl = imageUrl {
             return .image(imageUrl)
-        }
-        
-        if text.hasPrefix("http") {
-            return .link(text)
         }
         
         return .text(text)

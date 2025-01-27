@@ -11,7 +11,7 @@ class MessageCell: UITableViewCell {
 
     static let identifier = "MessageCell"
 
-    private let messageCellView = MessageCellView() // Using the reusable MessageCellView class
+    private let messageCellView = MessageCellView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -27,14 +27,14 @@ class MessageCell: UITableViewCell {
         messageCellView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            messageCellView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            messageCellView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            messageCellView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            messageCellView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            messageCellView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            messageCellView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            messageCellView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            messageCellView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
     }
-    
+
     func configure(with message: Message) {
-           messageCellView.configure(with: message) // Pass the message to `MessageCellView`'s configure method
-       }
+        messageCellView.configure(with: message)
+    }
 }
