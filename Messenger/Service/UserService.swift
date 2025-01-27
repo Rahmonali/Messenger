@@ -11,7 +11,13 @@ import FirebaseAuth
 
 final class UserService {
     
-    var currentUser: User?
+    var currentUser: User? {
+           didSet {
+               currentUserDidChange?(currentUser) // Notify when `currentUser` changes
+           }
+       }
+    
+    var currentUserDidChange: ((User?) -> Void)? 
     
     static let shared = UserService()
     
@@ -37,6 +43,16 @@ final class UserService {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let snapshot = try await FirestoreConstants.UsersCollection.document(uid).getDocument()
         self.currentUser = try snapshot.data(as: User.self)
+    }
+    
+    static func fetchUser(withUid uid: String, completion: @escaping(User) -> Void) {
+        FirestoreConstants.UsersCollection.document(uid).getDocument { snapshot, _ in
+            guard let user = try? snapshot?.data(as: User.self) else {
+                print("DEBUG: Failed to map user")
+                return
+            }
+            completion(user)
+        }
     }
     
     func updateUserFullname(_ fullname: String) async throws {

@@ -58,10 +58,11 @@ class MessageCellView: UIView {
         return stack
     }()
     
-    init(message: Message) {
+    //init(message: Message) {
+    init() {
         super.init(frame: .zero)
         setupView()
-        configure(with: message)
+        //configure(with: message)
     }
     
     required init?(coder: NSCoder) {
@@ -97,24 +98,18 @@ class MessageCellView: UIView {
     }
     
     
-    private func configure(with message: Message) {
+    func configure(with message: Message) {
         fullnameLabel.text = message.user?.fullname
-        
-        // Directly set the message text since it's not optional
         let messageText = message.isFromCurrentUser ? "You: \(message.text)" : message.text
         messageTextLabel.text = messageText
-        
-        // Configure the timestamp
         timestampLabel.text = message.timestamp.dateValue().timestampString()
-        
-        // Hide the read indicator if the message is read or is from the current user
         readIndicator.isHidden = message.read || message.isFromCurrentUser
     }
 }
 
 
-#Preview {
-    MessageCellView(
-        message: Message(messageId: "1", fromId: "rahmonali", toId: "abubakr", text: "Test message for you", timestamp: Timestamp(),
-                         user: User(fullname: "Rahmonali Fatkhuddinov", email: "rahmonali@gmail.com", profileImageUrl: nil), read: false, imageUrl: nil))
-}
+//#Preview {
+//    MessageCellView(
+//        message: Message(messageId: "1", fromId: "rahmonali", toId: "abubakr", text: "Test message for you", timestamp: Timestamp(),
+//                         user: User(fullname: "Rahmonali Fatkhuddinov", email: "rahmonali@gmail.com", profileImageUrl: nil), read: false, imageUrl: nil))
+//}
