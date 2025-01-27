@@ -16,6 +16,8 @@ class CircularProfileImageView: UIImageView {
         self.clipsToBounds = true
         self.tintColor = UIColor.systemGray4
         self.translatesAutoresizingMaskIntoConstraints = false
+        self.image = UIImage(systemName: "person.circle.fill")
+
         NSLayoutConstraint.activate([
             self.widthAnchor.constraint(equalToConstant: size.dimension),
             self.heightAnchor.constraint(equalToConstant: size.dimension)

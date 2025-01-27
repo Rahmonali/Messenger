@@ -10,11 +10,11 @@ import UIKit
 // TODO: Remove the extra things
 
 func makeLabel(
-    withText text: String,
+    withText text: String? = nil,
     textStyle: UIFont.TextStyle = .body,
     textColor: UIColor = .label,
     isBold: Bool = false,
-    textAlignment: NSTextAlignment = .center,
+    textAlignment: NSTextAlignment = .left,
     numberOfLines: Int = 1
 ) -> UILabel {
     let label = UILabel()
@@ -28,6 +28,7 @@ func makeLabel(
     
     return label
 }
+
 
 
 let buttonHeight: CGFloat = 40

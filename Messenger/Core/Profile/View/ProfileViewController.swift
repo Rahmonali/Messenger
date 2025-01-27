@@ -48,7 +48,6 @@ class ProfileViewController: UIViewController {
         profileViewModel.delegate = self
         configureUI()
         
-        profileImageView.image = UIImage(systemName: "person.circle.fill")
         fetchUserProfileImage()
         fullnameField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         self.logoutButton.addTarget(self, action: #selector(didTapLogout), for: .touchUpInside)
