@@ -11,7 +11,6 @@ import FirebaseFirestore
 
 enum MessageSendType {
     case text(String)
-    case image(UIImage)
 }
 
 enum ContentType {
@@ -19,7 +18,7 @@ enum ContentType {
     case image(String)
 }
 
-struct Message: Identifiable, Codable, Hashable {
+struct Message: Codable, Hashable {
     @DocumentID var messageId: String?
     let fromId: String
     let toId: String
@@ -52,6 +51,15 @@ struct Message: Identifiable, Codable, Hashable {
         
         return .text(text)
     }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(messageId)
+    }
+
+    static func == (lhs: Message, rhs: Message) -> Bool {
+        return lhs.messageId == rhs.messageId
+    }
+    
 }
 
 struct Conversation: Identifiable, Hashable, Codable {

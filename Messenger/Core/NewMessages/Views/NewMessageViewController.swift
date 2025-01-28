@@ -68,6 +68,8 @@ class NewMessageViewController: UIViewController {
         ])
     }
     
+    
+    
     private func setupBindings() {
         viewModel.onUsersUpdated = { [weak self] in
             self?.tableView.reloadData()
@@ -98,8 +100,8 @@ extension NewMessageViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let user = viewModel.filteredUsers[indexPath.row]
-        let chatViewModel = ChatViewModel(user: user)
-        let chatViewController = ChatViewController(user: user, viewModel: chatViewModel)
+        //let chatViewModel = ChatViewModel(user: user)
+        let chatViewController = ChatViewController(user: user)
         
         dismiss(animated: true) {
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

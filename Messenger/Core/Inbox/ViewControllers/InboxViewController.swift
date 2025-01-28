@@ -136,8 +136,7 @@ extension InboxViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = inboxViewModel.filteredMessages[indexPath.row]
         guard let user = message.user else { return }
-        let viewModel = ChatViewModel(user: user)
-        let chatViewController = ChatViewController(user: user, viewModel: viewModel)
+        let chatViewController = ChatViewController(user: user)
         navigationController?.pushViewController(chatViewController, animated: true)
     }
 }

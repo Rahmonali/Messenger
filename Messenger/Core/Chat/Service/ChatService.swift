@@ -46,11 +46,6 @@ class ChatService {
         switch type {
         case .text(let messageText):
             uploadMessage(messageText)
-        case .image(let uIImage):
-//            let imageUrl = try await ImageUploader.uploadImage(image: uIImage, type: .message)
-//            uploadMessage("Attachment: Image", imageUrl: imageUrl)
-                // TODO: Break...
-            break
         }
     }
     
