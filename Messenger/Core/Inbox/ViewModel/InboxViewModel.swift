@@ -10,7 +10,6 @@ import FirebaseFirestore
 
 class InboxViewModel {
     var recentMessages: [Message] = []
-    var conversations: [Conversation] = []
     var searchText: String = ""
 
     var filteredMessages: [Message] {
@@ -28,6 +27,7 @@ class InboxViewModel {
     private var firestoreListener: ListenerRegistration?
 
     init() {
+        print("DEBUG: InboxViewModel did init.......")
         setupSubscribers()
         observeRecentMessages()
     }
@@ -37,11 +37,11 @@ class InboxViewModel {
             guard let self = self, !changes.isEmpty else { return }
 
             if !self.didCompleteInitialLoad {
-                Task {
+                DispatchQueue.main.async {
                    self.loadInitialMessages(fromChanges: changes)
                 }
             } else {
-                Task {
+                DispatchQueue.main.async {
                     self.updateMessages(fromChanges: changes)
                 }
             }
@@ -108,7 +108,7 @@ class InboxViewModel {
             recentMessages.removeAll(where: { $0.id == message.id })
             try await InboxService.deleteMessage(message)
         } catch {
-            // TODO: If deletion fails add message back at original index
+            print("DEBUG: deletion failed")
         }
     }
 }

@@ -11,17 +11,16 @@ import FirebaseFirestore
 
 
 final class AuthService {
+    static let shared = AuthService()
+    private let db = Firestore.firestore()
+    
     var userSession: FirebaseAuth.User?
-    
-    public static let shared = AuthService()
-    
+        
     init() {
         self.userSession = Auth.auth().currentUser
         Task { try await loadUserData() }
     }
 
-    private let db = Firestore.firestore()
-        
     func createUser(with userRequest: CreateUserRequest) async throws {
         let fullname = userRequest.fullname
         let email = userRequest.email
@@ -42,6 +41,7 @@ final class AuthService {
             
             let result = try await Auth.auth().signIn(withEmail: userRequest.email, password: userRequest.password)
             self.userSession = result.user
+            
             try await loadUserData()
         } catch {
             throw error
@@ -50,8 +50,10 @@ final class AuthService {
     
     func signOut() throws {
         try Auth.auth().signOut()
+        self.userSession = nil
         UserService.shared.currentUser = nil
-        UserService.shared.currentUserDidChange = nil   
+        UserService.shared.currentUserDidChange = nil
+        InboxService.shared.reset()
     }
 
     public func forgotPassword(with email: String) async throws {

@@ -18,7 +18,6 @@ class InboxViewController: UIViewController {
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let welcomeLabel = makeLabel(withText: "There are no conversations yet", textStyle: .body, textAlignment: .center, numberOfLines: 2)
     
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
@@ -31,7 +30,6 @@ class InboxViewController: UIViewController {
         fetchCurrentUserAndReloadTable()
     }
     
-    // MARK: - UI Setup
     private func configureUI() {
         view.backgroundColor = .systemBackground
         configureNavigationBar()
@@ -80,8 +78,8 @@ class InboxViewController: UIViewController {
     
     private func updateWelcomeLabel() {
         let hasConversations = !inboxViewModel.filteredMessages.isEmpty
-       // welcomeLabel.isHidden = hasConversations
-        //tableView.isHidden = !hasConversations
+        welcomeLabel.isHidden = hasConversations
+        tableView.isHidden = !hasConversations
     }
     
     private func setupTableView() {
@@ -139,13 +137,7 @@ extension InboxViewController: UITableViewDelegate {
         let message = inboxViewModel.filteredMessages[indexPath.row]
         guard let user = message.user else { return }
         let viewModel = ChatViewModel(user: user)
-        let detailViewController = ChatViewController(user: user, viewModel: viewModel)
-        navigationController?.pushViewController(detailViewController, animated: true)
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row == inboxViewModel.filteredMessages.count - 1 {
-            print("DEBUG: Paginate shoud be here here..")
-        }
+        let chatViewController = ChatViewController(user: user, viewModel: viewModel)
+        navigationController?.pushViewController(chatViewController, animated: true)
     }
 }

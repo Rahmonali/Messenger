@@ -22,10 +22,10 @@ class InboxService {
     
     private var firestoreListener: ListenerRegistration?
     
+    // TODO:
     func observeRecentMessages() {
         DispatchQueue.main.async {
             guard let uid = Auth.auth().currentUser?.uid else { return }
-            
             let query = FirestoreConstants.MessagesCollection
                 .document(uid)
                 .collection("recent-messages")

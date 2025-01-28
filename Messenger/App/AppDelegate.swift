@@ -18,19 +18,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
-        
-        window = UIWindow(frame: UIScreen.main.bounds)
-        window?.makeKeyAndVisible()
-        window?.backgroundColor = .systemBackground
-        
-        loginViewController.delegate = self
-        
+        setupWindow()
         registerForNotifications()
         checkAuthentication()
+        loginViewController.delegate = self
         
         return true
     }
     
+    private func setupWindow() {
+         window = UIWindow(frame: UIScreen.main.bounds)
+         window?.backgroundColor = .systemBackground
+     }
+         
     func checkAuthentication() {
         if Auth.auth().currentUser == nil {
             let loginNavController = UINavigationController(rootViewController: loginViewController)
