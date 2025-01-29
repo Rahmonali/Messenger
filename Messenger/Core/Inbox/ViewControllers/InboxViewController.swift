@@ -16,24 +16,25 @@ class InboxViewController: UIViewController {
     
     private let profileImageView = CircularProfileImageView(size: .xSmall)
     private let tableView = UITableView(frame: .zero, style: .plain)
-    private let welcomeLabel = makeLabel(withText: "There are no conversations yet", textStyle: .body, textAlignment: .center, numberOfLines: 2)
+    private let refreshControl = UIRefreshControl()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
         setupTableView()
+        setEmptyStateIfNeeded()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupProfileImageInNavigationBar()
         fetchCurrentUserAndReloadTable()
+        tableView.reloadData()
     }
     
     private func configureUI() {
         view.backgroundColor = .systemBackground
         configureNavigationBar()
-        view.addSubview(welcomeLabel)
         view.addSubview(tableView)
         setupConstraints()
     }
@@ -50,13 +51,9 @@ class InboxViewController: UIViewController {
     }
     
     private func setupConstraints() {
-        welcomeLabel.translatesAutoresizingMaskIntoConstraints = false
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            welcomeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            welcomeLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -70,22 +67,18 @@ class InboxViewController: UIViewController {
             DispatchQueue.main.async {
                 self.profileImageView.configure(with: user?.profileImageUrl)
                 self.tableView.reloadData()
-                
-                self.updateWelcomeLabel()
+                self.setEmptyStateIfNeeded()
             }
         }
     }
-    
-    private func updateWelcomeLabel() {
-        let hasConversations = !inboxViewModel.filteredMessages.isEmpty
-        welcomeLabel.isHidden = hasConversations
-        tableView.isHidden = !hasConversations
-    }
-    
+
     private func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(MessageCell.self, forCellReuseIdentifier: MessageCell.identifier)
+        
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
     }
     
     private func setupProfileImageInNavigationBar() {
@@ -94,6 +87,21 @@ class InboxViewController: UIViewController {
         profileImageView.addGestureRecognizer(tapGesture)
         let profileBarButtonItem = UIBarButtonItem(customView: profileImageView)
         navigationItem.leftBarButtonItem = profileBarButtonItem
+    }
+    
+    private func setEmptyStateIfNeeded() {
+        if inboxViewModel.filteredMessages.isEmpty{
+            let emptyLabel = makeLabel(withText: "There is no conversation yet", textStyle: .headline, textColor: .gray, textAlignment: .center, numberOfLines: 2)
+            let containerView = UIView()
+            containerView.addSubview(emptyLabel)
+            NSLayoutConstraint.activate([
+                emptyLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+                emptyLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            ])
+            tableView.backgroundView = containerView
+        } else {
+            tableView.backgroundView = nil
+        }
     }
     
     // MARK: - Actions
@@ -110,6 +118,13 @@ class InboxViewController: UIViewController {
         let navController = UINavigationController(rootViewController: profileVC)
         navController.modalPresentationStyle = .fullScreen
         present(navController, animated: true)
+    }
+    
+    @objc private func handleRefresh() {
+        setEmptyStateIfNeeded()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.refreshControl.endRefreshing()
+        }
     }
 }
 

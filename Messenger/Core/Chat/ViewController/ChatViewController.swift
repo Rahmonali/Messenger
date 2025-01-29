@@ -47,6 +47,8 @@ class ChatViewController: UIViewController {
         setupUI()
         observeChatMessages()
         setEmptyStateIfNeeded()
+        
+        Task { try await updateMessageStatusIfNecessary() }
     }
     
     private func setupUI() {
@@ -83,6 +85,11 @@ class ChatViewController: UIViewController {
                 self.scrollToBottom()
             }
         }
+    }
+    
+    func updateMessageStatusIfNecessary() async throws {
+        guard let lastMessage = messages.last else { return }
+        try await service.updateMessageStatusIfNecessary(lastMessage)
     }
     
     private func scrollToBottom() {

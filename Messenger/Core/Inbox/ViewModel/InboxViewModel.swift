@@ -11,7 +11,7 @@ import FirebaseFirestore
 class InboxViewModel {
     var recentMessages: [Message] = []
     var searchText: String = ""
-
+    
     var filteredMessages: [Message] {
         if searchText.isEmpty {
             return recentMessages
@@ -22,10 +22,10 @@ class InboxViewModel {
             }
         }
     }
-
+    
     private var didCompleteInitialLoad = false
     private var firestoreListener: ListenerRegistration?
-
+    
     init() {
         print("DEBUG: InboxViewModel did init.......")
         setupSubscribers()
@@ -35,10 +35,10 @@ class InboxViewModel {
     private func setupSubscribers() {
         InboxService.shared.documentChangesDidUpdate = { [weak self] changes in
             guard let self = self, !changes.isEmpty else { return }
-
+            
             if !self.didCompleteInitialLoad {
                 DispatchQueue.main.async {
-                   self.loadInitialMessages(fromChanges: changes)
+                    self.loadInitialMessages(fromChanges: changes)
                 }
             } else {
                 DispatchQueue.main.async {
@@ -52,14 +52,14 @@ class InboxViewModel {
     func observeRecentMessages() {
         InboxService.shared.observeRecentMessages()
     }
-
+    
     
     private func loadInitialMessages(fromChanges changes: [DocumentChange]) {
         self.recentMessages = changes.compactMap{ try? $0.document.data(as: Message.self) }
         
         for i in 0 ..< recentMessages.count {
             let message = recentMessages[i]
-
+            
             UserService.fetchUser(withUid: message.chatPartnerId) { [weak self] user in
                 guard let self else { return }
                 self.recentMessages[i].user = user
@@ -70,7 +70,7 @@ class InboxViewModel {
             }
         }
     }
-
+    
     
     private func updateMessages(fromChanges changes: [DocumentChange]) {
         for change in changes {

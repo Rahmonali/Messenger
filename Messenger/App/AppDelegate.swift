@@ -14,7 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     let loginViewController = LoginViewController()
-    let mainViewController = InboxViewController()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
@@ -37,7 +36,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             loginNavController.modalPresentationStyle = .fullScreen
             setRootViewController(loginNavController)
         } else {
-            let mainNavController = UINavigationController(rootViewController: mainViewController)
+            let inboxViewController = InboxViewController()
+            let mainNavController = UINavigationController(rootViewController: inboxViewController)
             mainNavController.modalPresentationStyle = .fullScreen
             setRootViewController(mainNavController)
         }
