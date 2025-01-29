@@ -10,29 +10,16 @@ import FirebaseFirestore
 
 class InboxViewModel {
     var recentMessages: [Message] = []
-    var searchText: String = ""
-    
-    var filteredMessages: [Message] {
-        if searchText.isEmpty {
-            return recentMessages
-        } else {
-            return recentMessages.filter { message in
-                guard let user = message.user else { return false }
-                return user.fullname.lowercased().contains(searchText.lowercased())
-            }
-        }
-    }
     
     private var didCompleteInitialLoad = false
     private var firestoreListener: ListenerRegistration?
     
     init() {
-        print("DEBUG: InboxViewModel did init.......")
         setupSubscribers()
         observeRecentMessages()
     }
     
-    private func setupSubscribers() {
+    func setupSubscribers() {
         InboxService.shared.documentChangesDidUpdate = { [weak self] changes in
             guard let self = self, !changes.isEmpty else { return }
             

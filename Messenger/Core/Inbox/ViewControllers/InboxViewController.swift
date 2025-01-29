@@ -90,7 +90,7 @@ class InboxViewController: UIViewController {
     }
     
     private func setEmptyStateIfNeeded() {
-        if inboxViewModel.filteredMessages.isEmpty{
+        if inboxViewModel.recentMessages.isEmpty{
             let emptyLabel = makeLabel(withText: "There is no conversation yet", textStyle: .headline, textColor: .gray, textAlignment: .center, numberOfLines: 2)
             let containerView = UIView()
             containerView.addSubview(emptyLabel)
@@ -121,7 +121,10 @@ class InboxViewController: UIViewController {
     }
     
     @objc private func handleRefresh() {
+        inboxViewModel.setupSubscribers()
         setEmptyStateIfNeeded()
+        tableView.reloadData()
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             self.refreshControl.endRefreshing()
         }
@@ -131,7 +134,7 @@ class InboxViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension InboxViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return inboxViewModel.filteredMessages.count
+        return inboxViewModel.recentMessages.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -139,7 +142,7 @@ extension InboxViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let message = inboxViewModel.filteredMessages[indexPath.row]
+        let message = inboxViewModel.recentMessages[indexPath.row]
         cell.configure(with: message)
         
         return cell
@@ -149,7 +152,7 @@ extension InboxViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension InboxViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let message = inboxViewModel.filteredMessages[indexPath.row]
+        let message = inboxViewModel.recentMessages[indexPath.row]
         guard let user = message.user else { return }
         let chatViewController = ChatViewController(user: user)
         navigationController?.pushViewController(chatViewController, animated: true)
@@ -165,7 +168,7 @@ extension InboxViewController: UITableViewDelegate {
         }
         
         private func deleteMessage(at indexPath: IndexPath) {
-            let message = inboxViewModel.filteredMessages[indexPath.row]
+            let message = inboxViewModel.recentMessages[indexPath.row]
             Task {
                 do {
                     try await inboxViewModel.deleteMessage(message)

@@ -94,9 +94,12 @@ class MessageCellView: UIView {
     func configure(with message: Message) {
         fullnameLabel.text = message.user?.fullname
         profileImageView.configure(with: message.user?.profileImageUrl)
+        
         let messageText = message.isFromCurrentUser ? "You: \(message.text)" : message.text
         messageTextLabel.text = messageText
+        messageTextLabel.textColor = (!message.read && !message.isFromCurrentUser) ? .black : .gray
         timestampLabel.text = message.timestamp.dateValue().timestampString()
         readIndicator.isHidden = message.read || message.isFromCurrentUser
+        
     }
 }

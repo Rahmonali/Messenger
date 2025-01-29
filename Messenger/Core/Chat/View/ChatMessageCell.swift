@@ -29,7 +29,6 @@ class ChatMessageCell: UITableViewCell {
         return stack
     }()
 
-    // MARK: - Constraints
     private var leadingConstraint: NSLayoutConstraint!
     private var trailingConstraint: NSLayoutConstraint!
 
@@ -54,7 +53,6 @@ class ChatMessageCell: UITableViewCell {
 
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         horizontalStack.translatesAutoresizingMaskIntoConstraints = false
-
         
         NSLayoutConstraint.activate([
             messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 8),
@@ -106,6 +104,7 @@ class ChatMessageCell: UITableViewCell {
         horizontalStack.arrangedSubviews.forEach { horizontalStack.removeArrangedSubview($0) }
         horizontalStack.addArrangedSubview(profileImageView)
         horizontalStack.addArrangedSubview(bubbleView)
+        horizontalStack.addArrangedSubview(UIView())
 
         leadingConstraint.constant = 8
         trailingConstraint.constant = -50
