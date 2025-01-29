@@ -154,4 +154,30 @@ extension InboxViewController: UITableViewDelegate {
         let chatViewController = ChatViewController(user: user)
         navigationController?.pushViewController(chatViewController, animated: true)
     }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+            let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
+                self?.deleteMessage(at: indexPath)
+                completion(true)
+            }
+            deleteAction.image = UIImage(systemName: "trash")
+            return UISwipeActionsConfiguration(actions: [deleteAction])
+        }
+        
+        private func deleteMessage(at indexPath: IndexPath) {
+            let message = inboxViewModel.filteredMessages[indexPath.row]
+            Task {
+                do {
+                    try await inboxViewModel.deleteMessage(message)
+                    await MainActor.run {
+                        self.tableView.performBatchUpdates {
+                            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                            self.setEmptyStateIfNeeded()
+                        }
+                    }
+                } catch {
+                    print("DEBUG: Failed to delete message - \(error.localizedDescription)")
+                }
+            }
+        }
 }
