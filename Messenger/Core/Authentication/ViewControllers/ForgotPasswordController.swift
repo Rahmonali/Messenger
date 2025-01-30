@@ -15,7 +15,7 @@ class ForgotPasswordController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.configureUI()
-        
+        setupDismissKeyboardGesture()
         self.resetPasswordButton.addTarget(self, action: #selector(didTapForgotPassword), for: .touchUpInside)
     }
     
@@ -73,5 +73,14 @@ extension ForgotPasswordController {
                 AlertManager.showAlert(on: self, title: "Error Sending Password Reset", message: error.localizedDescription, buttonText: "Dismiss")
             }
         }
+    }
+    
+    private func setupDismissKeyboardGesture() {
+        let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(viewTapped(_: )))
+        view.addGestureRecognizer(dismissKeyboardTap)
+    }
+    
+    @objc func viewTapped(_ recognizer: UITapGestureRecognizer) {
+        view.endEditing(true)
     }
 }

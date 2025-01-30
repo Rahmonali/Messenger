@@ -20,6 +20,7 @@ class MessageInputView: UIView {
         textField.borderStyle = .roundedRect
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
+        textField.returnKeyType = .default
         return textField
     }()
     
@@ -43,7 +44,7 @@ class MessageInputView: UIView {
         addSubview(sendButton)
         
         backgroundColor = .systemGroupedBackground
-        
+        textField.delegate = self
         textField.translatesAutoresizingMaskIntoConstraints = false
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         
@@ -60,9 +61,20 @@ class MessageInputView: UIView {
         sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
     }
     
-    @objc private func handleSend() {
+    func sendMessage() {
         guard let text = textField.text, !text.isEmpty else { return }
         delegate?.didSendMessage(text)
         textField.text = nil
+    }
+    
+    @objc private func handleSend() {
+        sendMessage()
+    }
+}
+
+extension MessageInputView: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        sendMessage()
+        return true
     }
 }

@@ -70,8 +70,3 @@ class AuthHeaderView: UIView {
            ])
        }
 }
-
-
-#Preview {
-    AuthHeaderView(title: "Sign In", subTitle: "Sign in to your account")
-}

@@ -24,7 +24,6 @@ class CustomTextField: UITextField {
         self.backgroundColor = .secondarySystemBackground
         self.layer.cornerRadius = 10
         
-        self.returnKeyType = .done
         self.autocorrectionType = .no
         self.autocapitalizationType = .none
         
@@ -34,23 +33,22 @@ class CustomTextField: UITextField {
         switch fieldType {
         case .fullname:
             self.placeholder = "Full Name"
+            self.returnKeyType = .next
         case .email:
             self.placeholder = "Email Address"
             self.keyboardType = .emailAddress
             self.textContentType = .emailAddress
+            self.returnKeyType = .next
             
         case .password:
             self.placeholder = "Password"
             self.textContentType = .oneTimeCode
             self.isSecureTextEntry = true
+            self.returnKeyType = .done
         }
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-}
-
-#Preview {
-    CustomTextField(fieldType: .fullname)
 }

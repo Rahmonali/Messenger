@@ -30,6 +30,8 @@ class ChatViewController: UIViewController {
         return inputView
     }()
     
+    private var messageInputViewBottomConstraint: NSLayoutConstraint!
+    
     private let service: ChatService
     
     init(user: User) {
@@ -47,6 +49,8 @@ class ChatViewController: UIViewController {
         setupUI()
         observeChatMessages()
         setEmptyStateIfNeeded()
+        setupKeyboardHiding()
+        setupDismissKeyboardGesture()
         
         Task { try await updateMessageStatusIfNecessary() }
     }
@@ -61,6 +65,9 @@ class ChatViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         messageInputView.translatesAutoresizingMaskIntoConstraints = false
         
+        messageInputViewBottomConstraint = messageInputView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -69,8 +76,8 @@ class ChatViewController: UIViewController {
             
             messageInputView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             messageInputView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            messageInputView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            messageInputView.heightAnchor.constraint(equalToConstant: 80)
+            messageInputViewBottomConstraint,
+            messageInputView.heightAnchor.constraint(equalToConstant: 70)
         ])
     }
     
@@ -102,6 +109,20 @@ class ChatViewController: UIViewController {
         Task {
             try await service.sendMessage(type: .text(text))
         }
+    }
+    
+    private func setupKeyboardHiding() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    private func setupDismissKeyboardGesture() {
+        let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(viewTapped(_: )))
+        view.addGestureRecognizer(dismissKeyboardTap)
+    }
+    
+    @objc func viewTapped(_ recognizer: UITapGestureRecognizer) {
+        view.endEditing(true)
     }
     
     private func setEmptyStateIfNeeded() {
@@ -136,6 +157,29 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
+extension ChatViewController {
+    @objc func keyboardWillShow(sender: NSNotification) {
+        guard let userInfo = sender.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+
+        let keyboardHeight = keyboardFrame.cgRectValue.height
+        messageInputViewBottomConstraint.constant = -keyboardHeight
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc func keyboardWillHide(notification: NSNotification) {
+        messageInputViewBottomConstraint.constant = 0
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
+}
+
+
 extension ChatViewController: MessageInputViewDelegate {
     func didSendMessage(_ text: String) {
         sendMessage(text)
@@ -145,4 +189,3 @@ extension ChatViewController: MessageInputViewDelegate {
         }
     }
 }
-

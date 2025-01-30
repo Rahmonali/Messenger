@@ -22,6 +22,7 @@ class SignUpController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        setupDismissKeyboardGesture()
         signUpButton.addTarget(self, action: #selector(didTapSignUp), for: .touchUpInside)
         signInButton.addTarget(self, action: #selector(didTapSignIn), for: .touchUpInside)
     }
@@ -36,6 +37,10 @@ extension SignUpController {
     private func configureUI() {
         
         self.view.backgroundColor = .systemBackground
+        
+        fullnameField.delegate = self
+        emailField.delegate = self
+        passwordField.delegate = self
         
         self.view.addSubview(headerView)
         self.view.addSubview(fullnameField)
@@ -86,6 +91,15 @@ extension SignUpController {
 }
 
 extension SignUpController {
+    private func setupDismissKeyboardGesture() {
+        let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(viewTapped(_: )))
+        view.addGestureRecognizer(dismissKeyboardTap)
+    }
+    
+    @objc func viewTapped(_ recognizer: UITapGestureRecognizer) {
+        view.endEditing(true) // resign first responder
+    }
+    
     @objc func didTapSignUp() {
         let registerUserRequest = CreateUserRequest(
             fullname: self.fullnameField.text ?? "",
@@ -93,13 +107,11 @@ extension SignUpController {
             password: self.passwordField.text ?? "", profileImageUrl: nil
         )
         
-        // Email check
         if !Regex.isValidEmail(for: registerUserRequest.email) {
             AlertManager.showAlert(on: self, title: "Invalid Email", message: "Please enter a valid email.", buttonText: "Dismiss")
             return
         }
         
-        // Password check
         if !Regex.isPasswordValid(for: registerUserRequest.password) {
             AlertManager.showAlert(on: self, title: "Invalid Password", message: "Please enter a valid password.", buttonText: "OK")
             return
@@ -123,15 +135,15 @@ extension SignUpController {
 
 extension SignUpController:UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        fullnameField.endEditing(true)
-        emailField.endEditing(true)
-        passwordField.endEditing(true)
+        switch textField {
+        case fullnameField:
+            emailField.becomeFirstResponder()
+        case emailField:
+            passwordField.becomeFirstResponder()
+        default:
+            textField.resignFirstResponder()
+        }
         return true
     }
     
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        return true
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {}
 }

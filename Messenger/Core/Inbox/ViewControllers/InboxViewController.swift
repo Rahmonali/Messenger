@@ -34,8 +34,8 @@ class InboxViewController: UIViewController {
     
     private func configureUI() {
         view.backgroundColor = .systemBackground
-        configureNavigationBar()
         view.addSubview(tableView)
+        configureNavigationBar()
         setupConstraints()
     }
     
@@ -62,6 +62,10 @@ class InboxViewController: UIViewController {
     }
     
     func fetchCurrentUserAndReloadTable() {
+        if let user = UserService.shared.currentUser {
+            self.profileImageView.configure(with: user.profileImageUrl)
+        }
+
         UserService.shared.currentUserDidChange = { [weak self] user in
             guard let self = self else { return }
             DispatchQueue.main.async {

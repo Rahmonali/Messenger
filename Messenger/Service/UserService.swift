@@ -13,8 +13,7 @@ final class UserService {
     
     var currentUser: User? {
         didSet {
-            print("DEBUG: DID set current user.......")
-            currentUserDidChange?(currentUser) // Notify when currentUser changes
+            currentUserDidChange?(currentUser)
         }
     }
     

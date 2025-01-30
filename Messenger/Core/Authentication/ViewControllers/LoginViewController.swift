@@ -16,8 +16,6 @@ protocol LogoutDelegate: AnyObject {
 }
 
 class LoginViewController: UIViewController {
-    
-    // MARK: - UI Components
     private let headerView = AuthHeaderView(title: "Sign In", subTitle: "Sign in to your account")
     
     private let emailField = CustomTextField(fieldType: .email)
@@ -45,7 +43,6 @@ class LoginViewController: UIViewController {
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        signInButton.configuration?.showsActivityIndicator = false
     }
     
 }
@@ -53,6 +50,9 @@ class LoginViewController: UIViewController {
 extension LoginViewController {
     private func configureUI() {
         view.backgroundColor = .systemBackground
+        
+        emailField.delegate = self
+        passwordField.delegate = self
         
         self.view.addSubview(headerView)
         self.view.addSubview(emailField)
@@ -111,19 +111,15 @@ extension LoginViewController {
             password: self.passwordField.text ?? ""
         )
         
-        // Email check
         if !Regex.isValidEmail(for: loginRequest.email) {
             AlertManager.showAlert(on: self, title: "Invalid Email", message: "Please enter a valid email.", buttonText: "OK")
             return
         }
         
-        // Password check
         if !Regex.isPasswordValid(for: loginRequest.password) {
             AlertManager.showAlert(on: self, title: "Invalid Password", message: "Please enter a valid password.", buttonText: "OK")
             return
         }
-        
-        signInButton.configuration?.showsActivityIndicator = true
         
         Task {
             do {
@@ -146,6 +142,13 @@ extension LoginViewController {
     }
 }
 
-#Preview {
-    LoginViewController()
+extension LoginViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == emailField {
+            passwordField.becomeFirstResponder()
+        } else {
+            textField.resignFirstResponder()
+        }
+        return true
+    }
 }

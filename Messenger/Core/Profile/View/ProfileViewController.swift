@@ -172,14 +172,3 @@ extension ProfileViewController: PHPickerViewControllerDelegate {
         }
     }
 }
-
-#Preview {
-    ProfileViewController(user: User(
-        userId: "234353",
-        fullname: "Rahmonali",
-        email: "rahmonali1995@gmail.com",
-        profileImageUrl: nil),
-                          profileViewModel: ProfileViewModel()
-    )
-}
-

@@ -62,8 +62,3 @@ class NewMessageUserTableViewCell: UITableViewCell {
         profileImageView.configure(with: user.profileImageUrl)
     }
 }
-
-
-#Preview {
-    NewMessageUserTableViewCell()
-}

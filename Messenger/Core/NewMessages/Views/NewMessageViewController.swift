@@ -120,7 +120,3 @@ extension NewMessageViewController: UISearchBarDelegate {
         viewModel.searchText = searchText
     }
 }
-
-#Preview {
-    NewMessageViewController()
-}
