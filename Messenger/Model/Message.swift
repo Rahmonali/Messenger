@@ -11,6 +11,7 @@ import FirebaseFirestore
 
 enum MessageSendType {
     case text(String)
+    case image(UIImage)
 }
 
 enum ContentType {

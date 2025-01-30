@@ -66,7 +66,6 @@ class ChatViewController: UIViewController {
         messageInputView.translatesAutoresizingMaskIntoConstraints = false
         
         messageInputViewBottomConstraint = messageInputView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -110,6 +109,34 @@ class ChatViewController: UIViewController {
             try await service.sendMessage(type: .text(text))
         }
     }
+    
+    private func sendImageMessage(_ image: UIImage) {
+        Task {
+            try await service.sendMessage(type: .image(image))
+        }
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+            self.scrollToBottom()
+        }
+    }
+    
+    private func presentImagePicker() {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 1
+        config.filter = .images
+        
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+    
+    private func presentCamera() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .camera
+        imagePicker.delegate = self
+        present(imagePicker, animated: true)
+    }
+    
     
     private func setupKeyboardHiding() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -161,24 +188,47 @@ extension ChatViewController {
     @objc func keyboardWillShow(sender: NSNotification) {
         guard let userInfo = sender.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
-
+        
         let keyboardHeight = keyboardFrame.cgRectValue.height
         messageInputViewBottomConstraint.constant = -keyboardHeight
-
+        
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
         }
     }
-
+    
     @objc func keyboardWillHide(notification: NSNotification) {
         messageInputViewBottomConstraint.constant = 0
-
+        
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
         }
     }
 }
 
+extension ChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true)
+        
+        if let selectedImage = info[.originalImage] as? UIImage {
+            sendImageMessage(selectedImage)
+        }
+    }
+}
+
+extension ChatViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        guard let result = results.first else { return }
+        result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+            guard let self = self, let selectedImage = image as? UIImage, error == nil else { return }
+            DispatchQueue.main.async {
+                self.sendImageMessage(selectedImage)
+            }
+        }
+    }
+}
 
 extension ChatViewController: MessageInputViewDelegate {
     func didSendMessage(_ text: String) {
@@ -188,4 +238,22 @@ extension ChatViewController: MessageInputViewDelegate {
             self.scrollToBottom()
         }
     }
+    
+    func didTapImageButton() {
+        let alert = UIAlertController(title: "Select Image", message: "", preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Select from Gallery", style: .default, handler: { _ in
+            self.presentImagePicker()
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Take Picture", style: .default, handler: { _ in
+            self.presentCamera()
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        present(alert, animated: true)
+    }
 }
+
+

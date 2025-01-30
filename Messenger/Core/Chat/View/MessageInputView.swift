@@ -9,6 +9,7 @@ import UIKit
 
 protocol MessageInputViewDelegate: AnyObject {
     func didSendMessage(_ text: String)
+    func didTapImageButton() // New delegate method for image selection
 }
 
 class MessageInputView: UIView {
@@ -30,6 +31,14 @@ class MessageInputView: UIView {
         return button
     }()
     
+    private let imageButton: UIButton = {
+        let button = UIButton(type: .system)
+        let image = UIImage(systemName: "photo") // System icon for images
+        button.setImage(image, for: .normal)
+        button.tintColor = .systemBlue
+        return button
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -42,23 +51,31 @@ class MessageInputView: UIView {
     private func setupUI() {
         addSubview(textField)
         addSubview(sendButton)
+        addSubview(imageButton)
         
         backgroundColor = .systemGroupedBackground
         textField.delegate = self
         textField.translatesAutoresizingMaskIntoConstraints = false
         sendButton.translatesAutoresizingMaskIntoConstraints = false
+        imageButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            textField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            textField.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            textField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8),
+            imageButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            imageButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
+            imageButton.widthAnchor.constraint(equalToConstant: 30),
             
+            textField.leadingAnchor.constraint(equalTo: imageButton.trailingAnchor, constant: 8),
+            textField.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            textField.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: 8),
+            
+            sendButton.leadingAnchor.constraint(equalTo: textField.trailingAnchor, constant: 8),
             sendButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            sendButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            sendButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
             sendButton.widthAnchor.constraint(equalToConstant: 50)
         ])
         
         sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
+        imageButton.addTarget(self, action: #selector(handleImageSelection), for: .touchUpInside)
     }
     
     func sendMessage() {
@@ -69,6 +86,10 @@ class MessageInputView: UIView {
     
     @objc private func handleSend() {
         sendMessage()
+    }
+    
+    @objc private func handleImageSelection() {
+        delegate?.didTapImageButton()
     }
 }
 

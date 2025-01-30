@@ -46,6 +46,9 @@ class ChatService {
         switch type {
         case .text(let messageText):
             uploadMessage(messageText)
+        case .image(let uIImage):
+            let imageUrl = try await ImageUploader.uploadImage(image: uIImage, type: .message)
+            uploadMessage("Attachment: Image", imageUrl: imageUrl)
         }
     }
     
@@ -92,7 +95,7 @@ class ChatService {
     func updateMessageStatusIfNecessary(_ message: Message) async throws {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         guard !message.read else { return }
-                
+        
         try await FirestoreConstants.MessagesCollection
             .document(uid)
             .collection("recent-messages")

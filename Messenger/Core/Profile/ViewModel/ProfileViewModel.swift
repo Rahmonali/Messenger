@@ -32,27 +32,12 @@ class ProfileViewModel {
     }
     
     func updateProfileImage(_ image: UIImage) async {
-        guard let imageUrl = await uploadProfileImage(image) else { return }
+        guard let imageUrl = try? await ImageUploader.uploadImage(image: image, type: .profile) else { return }
+        await loadUserProfileImage(from: imageUrl)
         do {
             try await UserService.shared.updateUserProfileImageUrl(imageUrl)
-            await loadUserProfileImage(from: imageUrl)
         } catch {
             print("Failed to update user profile image URL: \(error.localizedDescription)")
-        }
-    }
-    
-    private func uploadProfileImage(_ image: UIImage) async -> String? {
-        guard let imageData = image.jpegData(compressionQuality: 0.5) else { return nil }
-        let fileName = UUID().uuidString
-        let ref = Storage.storage().reference(withPath: "/profile_images/\(fileName)")
-        
-        do {
-            _ = try await ref.putDataAsync(imageData)
-            let url = try await ref.downloadURL()
-            return url.absoluteString
-        } catch {
-            print("Failed to upload profile image: \(error.localizedDescription)")
-            return nil
         }
     }
 }
