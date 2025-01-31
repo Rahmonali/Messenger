@@ -13,12 +13,14 @@ enum MessageSendType {
     case text(String)
     case image(UIImage)
     case location(latitude: Double, longitude: Double)
+    case contact(name: String, phoneNumber: String)
 }
 
 enum ContentType {
     case text(String)
     case image(String)
     case location(latitude: Double, longitude: Double)
+    case contact(name: String, phoneNumber: String)
 }
 
 struct Message: Codable, Hashable {
@@ -32,6 +34,8 @@ struct Message: Codable, Hashable {
     var imageUrl: String?
     var latitude: Double?
     var longitude: Double?
+    var contactName: String?
+    var contactPhoneNumber: String?
     
     var id: String {
         return messageId ?? NSUUID().uuidString
@@ -54,6 +58,8 @@ struct Message: Codable, Hashable {
             return .image(imageUrl)
         } else if let latitude = latitude, let longitude = longitude {
             return .location(latitude: latitude, longitude: longitude)
+        } else if let contactName = contactName, let contactPhoneNumber = contactPhoneNumber {
+            return .contact(name: contactName, phoneNumber: contactPhoneNumber)
         }
         return .text(text)
     }

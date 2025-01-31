@@ -174,6 +174,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Messenger/Resources/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take pictures";
+				INFOPLIST_KEY_NSContactsUsageDescription = "We need access to your contacts to allow selection";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs access to your location for sharing in chat.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to share it in the chat";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -205,6 +206,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Messenger/Resources/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take pictures";
+				INFOPLIST_KEY_NSContactsUsageDescription = "We need access to your contacts to allow selection";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs access to your location for sharing in chat.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to share it in the chat";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

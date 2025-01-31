@@ -28,12 +28,15 @@ class ChatViewController: UIViewController {
     private lazy var messageInputView: MessageInputView = {
         let inputView = MessageInputView()
         inputView.delegate = self
+        contactManager.delegate = self
         return inputView
     }()
     
     private var messageInputViewBottomConstraint: NSLayoutConstraint!
     private let locationManager = CLLocationManager()
-    private let service: ChatService
+    private let contactManager = ContactManager()
+
+    let service: ChatService
     
     init(user: User) {
         self.user = user
@@ -60,6 +63,13 @@ class ChatViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.title = user.fullname
         
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "person.crop.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(selectContact)
+        )
+        
         view.addSubview(tableView)
         view.addSubview(messageInputView)
         
@@ -80,6 +90,11 @@ class ChatViewController: UIViewController {
             messageInputView.heightAnchor.constraint(equalToConstant: 70)
         ])
     }
+    
+    @objc private func selectContact() {
+          contactManager.openContactPicker(from: self)
+      }
+    
     
     private func observeChatMessages() {
         service.observeMessages { [weak self] newMessages in

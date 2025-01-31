@@ -103,6 +103,8 @@ class ChatMessageCell: UITableViewCell {
             configureImageMessage(imageUrl: imageUrl)
         case .location(let latitude, let longitude):
             configureLocationMessage(latitude: latitude, longitude: longitude)
+        case .contact(name: let name, phoneNumber: let phoneNumber):
+            configureContactMessage(name: name, phoneNumber: phoneNumber)
         }
         
         if message.isFromCurrentUser {
@@ -142,6 +144,13 @@ class ChatMessageCell: UITableViewCell {
         mapView.addAnnotation(annotation)
     }
     
+    private func configureContactMessage(name: String, phoneNumber: String) {
+        bubbleView.isHidden = false
+        messageLabel.text = "Name: \(name)\nPhone: \(phoneNumber)"
+        messageImageView.isHidden = true
+        mapView.isHidden = true
+    }
+    
     private func configureOutgoingMessage() {
         bubbleView.backgroundColor = .systemGreen
         profileImageView.isHidden = true
@@ -149,15 +158,15 @@ class ChatMessageCell: UITableViewCell {
         horizontalStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         if !messageImageView.isHidden {
-              horizontalStack.addArrangedSubview(UIView())
-              horizontalStack.addArrangedSubview(messageImageView)
-          } else if !mapView.isHidden {
-              horizontalStack.addArrangedSubview(UIView())
-              horizontalStack.addArrangedSubview(mapView)
-          } else {
-              horizontalStack.addArrangedSubview(UIView())
-              horizontalStack.addArrangedSubview(bubbleView)
-          }
+            horizontalStack.addArrangedSubview(UIView())
+            horizontalStack.addArrangedSubview(messageImageView)
+        } else if !mapView.isHidden {
+            horizontalStack.addArrangedSubview(UIView())
+            horizontalStack.addArrangedSubview(mapView)
+        } else {
+            horizontalStack.addArrangedSubview(UIView())
+            horizontalStack.addArrangedSubview(bubbleView)
+        }
         
         leadingConstraint.constant = 50
         trailingConstraint.constant = -8
@@ -173,12 +182,12 @@ class ChatMessageCell: UITableViewCell {
         horizontalStack.addArrangedSubview(profileImageView)
         
         if !messageImageView.isHidden {
-              horizontalStack.addArrangedSubview(messageImageView)
-          } else if !mapView.isHidden {
-              horizontalStack.addArrangedSubview(mapView)
-          } else {
-              horizontalStack.addArrangedSubview(bubbleView)
-          }
+            horizontalStack.addArrangedSubview(messageImageView)
+        } else if !mapView.isHidden {
+            horizontalStack.addArrangedSubview(mapView)
+        } else {
+            horizontalStack.addArrangedSubview(bubbleView)
+        }
         
         horizontalStack.addArrangedSubview(UIView())
         
