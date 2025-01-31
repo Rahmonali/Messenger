@@ -9,6 +9,7 @@
 import UIKit
 import PhotosUI
 import Kingfisher
+import CoreLocation
 
 class ChatViewController: UIViewController {
     private let user: User
@@ -31,7 +32,7 @@ class ChatViewController: UIViewController {
     }()
     
     private var messageInputViewBottomConstraint: NSLayoutConstraint!
-    
+    private let locationManager = CLLocationManager()
     private let service: ChatService
     
     init(user: User) {
@@ -208,10 +209,10 @@ extension ChatViewController {
 
 extension ChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        picker.dismiss(animated: true)
-        
-        if let selectedImage = info[.originalImage] as? UIImage {
-            sendImageMessage(selectedImage)
+        picker.dismiss(animated: true) { [weak self] in
+            if let selectedImage = info[.originalImage] as? UIImage {
+                self?.sendImageMessage(selectedImage)
+            }
         }
     }
 }
@@ -239,6 +240,10 @@ extension ChatViewController: MessageInputViewDelegate {
         }
     }
     
+    func didTapLocationButton() {
+        requestLocationPermission()
+    }
+    
     func didTapImageButton() {
         let alert = UIAlertController(title: "Select Image", message: "", preferredStyle: .actionSheet)
         
@@ -256,4 +261,92 @@ extension ChatViewController: MessageInputViewDelegate {
     }
 }
 
-
+extension ChatViewController: CLLocationManagerDelegate {
+    
+    private func requestLocationPermission() {
+        locationManager.delegate = self
+        let status = locationManager.authorizationStatus
+        
+        switch status {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse, .authorizedAlways:
+            fetchCurrentLocation()
+        case .denied, .restricted:
+            presentLocationPermissionAlert()
+        @unknown default:
+            break
+        }
+    }
+    
+    private func presentLocationPermissionAlert() {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(
+                title: "Location Access Denied",
+                message: "Enable location access in Settings to share your location.",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
+                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            })
+            
+            self.present(alert, animated: true)
+        }
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        let status = manager.authorizationStatus
+        
+        switch status {
+        case .authorizedWhenInUse, .authorizedAlways:
+            if CLLocationManager.locationServicesEnabled() {
+                fetchCurrentLocation()
+            } else {
+                print("Location services are disabled.")
+            }
+        case .denied, .restricted:
+            presentLocationPermissionAlert()
+        default:
+            break
+        }
+    }
+    
+    private func fetchCurrentLocation() {
+        self.locationManager.startUpdatingLocation()
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        sendLocationMessage(location)        
+        locationManager.stopUpdatingLocation()
+    }
+    
+    private func sendLocationMessage(_ location: CLLocation) {
+        Task(priority: .background) {
+            do {
+                try await service.sendMessage(type: .location(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude))
+                
+                DispatchQueue.main.async {
+                    self.reloadChatData()
+                }
+            } catch {
+                print("Failed to send location message: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func reloadChatData() {
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+            self.scrollToBottom()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Failed to get location: \(error.localizedDescription)")
+    }
+}

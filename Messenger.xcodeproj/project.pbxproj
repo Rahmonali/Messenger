@@ -173,6 +173,9 @@
 				DEVELOPMENT_TEAM = PF945T49C7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Messenger/Resources/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take pictures";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs access to your location for sharing in chat.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to share it in the chat";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -201,6 +204,9 @@
 				DEVELOPMENT_TEAM = PF945T49C7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Messenger/Resources/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take pictures";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs access to your location for sharing in chat.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to share it in the chat";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

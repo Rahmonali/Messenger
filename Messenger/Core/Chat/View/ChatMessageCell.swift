@@ -7,6 +7,7 @@
 
 import UIKit
 import Kingfisher
+import MapKit
 
 class ChatMessageCell: UITableViewCell {
     
@@ -37,6 +38,13 @@ class ChatMessageCell: UITableViewCell {
         return stack
     }()
     
+    private let mapView: MKMapView = {
+        let map = MKMapView()
+        map.layer.cornerRadius = 10
+        map.isUserInteractionEnabled = false
+        return map
+    }()
+    
     private var leadingConstraint: NSLayoutConstraint!
     private var trailingConstraint: NSLayoutConstraint!
     
@@ -53,10 +61,13 @@ class ChatMessageCell: UITableViewCell {
     private func setupViews() {
         bubbleView.addSubview(messageLabel)
         contentView.addSubview(horizontalStack)
+        contentView.addSubview(mapView)
         
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         horizontalStack.translatesAutoresizingMaskIntoConstraints = false
         messageImageView.translatesAutoresizingMaskIntoConstraints = false
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        
     }
     
     private func setupConstraints() {
@@ -76,6 +87,9 @@ class ChatMessageCell: UITableViewCell {
             
             messageImageView.widthAnchor.constraint(equalToConstant: 200),
             messageImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 200),
+            
+            mapView.widthAnchor.constraint(equalToConstant: 200),
+            mapView.heightAnchor.constraint(equalToConstant: 150)
         ])
     }
     
@@ -87,6 +101,8 @@ class ChatMessageCell: UITableViewCell {
             configureTextMessage(text: text)
         case .image(let imageUrl):
             configureImageMessage(imageUrl: imageUrl)
+        case .location(let latitude, let longitude):
+            configureLocationMessage(latitude: latitude, longitude: longitude)
         }
         
         if message.isFromCurrentUser {
@@ -111,19 +127,37 @@ class ChatMessageCell: UITableViewCell {
         }
     }
     
+    private func configureLocationMessage(latitude: Double, longitude: Double) {
+        mapView.isHidden = false
+        bubbleView.isHidden = true
+        messageImageView.isHidden = true
+        
+        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 500, longitudinalMeters: 500)
+        
+        mapView.setRegion(region, animated: false)
+        
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        mapView.addAnnotation(annotation)
+    }
+    
     private func configureOutgoingMessage() {
         bubbleView.backgroundColor = .systemGreen
         profileImageView.isHidden = true
         
         horizontalStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        if messageImageView.isHidden {
-            horizontalStack.addArrangedSubview(UIView())
-            horizontalStack.addArrangedSubview(bubbleView)
-        } else {
-            horizontalStack.addArrangedSubview(UIView())
-            horizontalStack.addArrangedSubview(messageImageView)
-        }
+        if !messageImageView.isHidden {
+              horizontalStack.addArrangedSubview(UIView())
+              horizontalStack.addArrangedSubview(messageImageView)
+          } else if !mapView.isHidden {
+              horizontalStack.addArrangedSubview(UIView())
+              horizontalStack.addArrangedSubview(mapView)
+          } else {
+              horizontalStack.addArrangedSubview(UIView())
+              horizontalStack.addArrangedSubview(bubbleView)
+          }
         
         leadingConstraint.constant = 50
         trailingConstraint.constant = -8
@@ -138,11 +172,13 @@ class ChatMessageCell: UITableViewCell {
         
         horizontalStack.addArrangedSubview(profileImageView)
         
-        if messageImageView.isHidden {
-            horizontalStack.addArrangedSubview(bubbleView)
-        } else {
-            horizontalStack.addArrangedSubview(messageImageView)
-        }
+        if !messageImageView.isHidden {
+              horizontalStack.addArrangedSubview(messageImageView)
+          } else if !mapView.isHidden {
+              horizontalStack.addArrangedSubview(mapView)
+          } else {
+              horizontalStack.addArrangedSubview(bubbleView)
+          }
         
         horizontalStack.addArrangedSubview(UIView())
         
@@ -155,6 +191,8 @@ class ChatMessageCell: UITableViewCell {
         messageImageView.image = nil
         messageImageView.isHidden = true
         bubbleView.isHidden = true
+        mapView.isHidden = true
+        mapView.removeAnnotations(mapView.annotations)
     }
     
     override func prepareForReuse() {
@@ -162,3 +200,5 @@ class ChatMessageCell: UITableViewCell {
         resetCell()
     }
 }
+
+

@@ -12,11 +12,13 @@ import FirebaseFirestore
 enum MessageSendType {
     case text(String)
     case image(UIImage)
+    case location(latitude: Double, longitude: Double)
 }
 
 enum ContentType {
     case text(String)
     case image(String)
+    case location(latitude: Double, longitude: Double)
 }
 
 struct Message: Codable, Hashable {
@@ -28,6 +30,8 @@ struct Message: Codable, Hashable {
     var user: User?
     var read: Bool
     var imageUrl: String?
+    var latitude: Double?
+    var longitude: Double?
     
     var id: String {
         return messageId ?? NSUUID().uuidString
@@ -48,15 +52,16 @@ struct Message: Codable, Hashable {
     var contentType: ContentType {
         if let imageUrl = imageUrl {
             return .image(imageUrl)
+        } else if let latitude = latitude, let longitude = longitude {
+            return .location(latitude: latitude, longitude: longitude)
         }
-        
         return .text(text)
     }
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(messageId)
     }
-
+    
     static func == (lhs: Message, rhs: Message) -> Bool {
         return lhs.messageId == rhs.messageId
     }

@@ -49,10 +49,12 @@ class ChatService {
         case .image(let uIImage):
             let imageUrl = try await ImageUploader.uploadImage(image: uIImage, type: .message)
             uploadMessage("Attachment: Image", imageUrl: imageUrl)
+        case .location(latitude: let latitude, longitude: let longitude):
+            uploadMessage("Shared user Location", latitude: latitude, longitude: longitude)
         }
     }
     
-    private func uploadMessage(_ messageText: String, imageUrl: String? = nil) {
+    private func uploadMessage(_ messageText: String, imageUrl: String? = nil, latitude: Double? = nil, longitude: Double? = nil) {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         let chatPartnerId = chatPartner.id
         
@@ -77,7 +79,9 @@ class ChatService {
             text: messageText,
             timestamp: Timestamp(),
             read: false,
-            imageUrl: imageUrl
+            imageUrl: imageUrl,
+            latitude: latitude,
+            longitude: longitude
         )
         var currentUserMessage = message
         currentUserMessage.read = true
